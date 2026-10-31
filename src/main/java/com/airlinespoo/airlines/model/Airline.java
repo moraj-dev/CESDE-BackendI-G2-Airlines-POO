@@ -1,34 +1,51 @@
 package com.airlinespoo.airlines.model;
 
+import com.airlinespoo.core.model.Identifiable;
 import com.airlinespoo.core.util.Validator;
 
 import java.util.Objects;
 
-public class Airline {
+/**
+ * Representa una aerolínea en el sistema.
+ */
+public class Airline implements Identifiable<Integer> {
 
     private static final int MAX_NAME_LENGTH = 50;
     private final int id;
     private String name;
 
-    private String validateName(String name) {
-        return Validator.requireText(name, "nombre de la aerolínea", MAX_NAME_LENGTH);
-    }
-
+    /**
+     * Constructor para crear una aerolínea.
+     *
+     * @param id identificador único de la aerolínea
+     * @param name nombre de la aerolínea (máximo 50 caracteres)
+     */
     public Airline(int id, String name) {
-        this.id = id;
+        this.id = (int) Validator.requirePositive(id, "id de la aerolínea");
         this.name = validateName(name);
     }
 
-    public int getId() {
+    @Override
+    public Integer getId() {
         return id;
     }
 
+    /**
+     * Retorna el nombre de la aerolínea.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Modifica el nombre de la aerolínea.
+     */
     public void setName(String name) {
         this.name = validateName(name);
+    }
+
+    private String validateName(String name) {
+        return Validator.requireText(name, "nombre de la aerolínea", MAX_NAME_LENGTH);
     }
 
     @Override
