@@ -2,6 +2,8 @@ package com.airlinespoo.airlines.model;
 
 import com.airlinespoo.core.util.Validator;
 
+import java.util.Objects;
+
 public class Airline {
 
     private static final int MAX_NAME_LENGTH = 50;
@@ -32,5 +34,18 @@ public class Airline {
     @Override
     public String toString() {
         return "Id: " + id + ", Name: " + name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Airline airline = (Airline) o;
+        return id == airline.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
