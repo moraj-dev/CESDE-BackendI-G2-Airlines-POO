@@ -8,9 +8,13 @@ public class Airline {
     private final int id;
     private String name;
 
+    private String validateName(String name) {
+        return Validator.requireText(name, "nombre de la aerolínea", MAX_NAME_LENGTH);
+    }
+
     public Airline(int id, String name) {
         this.id = id;
-        this.name = Validator.requireText(name, "nombre de la aerolínea", MAX_NAME_LENGTH);
+        this.name = validateName(name);
     }
 
     public int getId() {
@@ -19,5 +23,9 @@ public class Airline {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = validateName(name);
     }
 }
