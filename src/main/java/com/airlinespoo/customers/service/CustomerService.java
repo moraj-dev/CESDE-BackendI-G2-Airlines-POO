@@ -1,4 +1,4 @@
 package com.airlinespoo.customers.service;
 
-public class CostomerService {
+public class CustomerService {
 }

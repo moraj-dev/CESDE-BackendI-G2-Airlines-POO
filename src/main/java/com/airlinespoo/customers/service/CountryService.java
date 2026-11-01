@@ -1,4 +1,5 @@
 package com.airlinespoo.customers.service;
 
-public class Country {
+public class CountryService {
+
 }

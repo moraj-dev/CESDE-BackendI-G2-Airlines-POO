@@ -1,5 +1,5 @@
 package com.airlinespoo.customers.ui;
 
-public class Country {
+public class CountryConsole {
 
 }

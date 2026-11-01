@@ -1,4 +1,4 @@
 package com.airlinespoo.customers.repository;
 
-public interface CostomerRepository {
+public interface CustomerRepository {
 }
