@@ -9,6 +9,7 @@ import java.util.Objects;
 /**
  * Cliente de la aerolínea. Se identifica por su documento de identidad.
  */
+
 public class Customer implements Identifiable<String> {
 
     // Constantes
@@ -33,6 +34,19 @@ public class Customer implements Identifiable<String> {
 
     public Customer(String id, String firstName, String lastName, DocumentType documentType,
                     String telephoneNumber, String email, Country country, String address) {
+        /**
+         * Crea un cliente válido.
+         *
+         * @param id              documento de identidad (obligatorio, no cambia)
+         * @param firstName       nombre (obligatorio)
+         * @param lastName        apellido (obligatorio)
+         * @param documentType    tipo de documento (obligatorio)
+         * @param telephoneNumber teléfono, solo dígitos con un + opcional al inicio
+         * @param email           correo (opcional, puede ser null)
+         * @param country         país (obligatorio)
+         * @param address         dirección (opcional, puede ser null)
+         */
+
         this.id = validateId(id);
         this.firstName = validateFirstName(firstName);
         this.lastName = validateLastName(lastName);

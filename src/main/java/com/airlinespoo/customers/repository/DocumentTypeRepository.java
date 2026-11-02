@@ -1,5 +1,10 @@
 package com.airlinespoo.customers.repository;
 
-public interface DocumentTypeRepository {
+import com.airlinespoo.core.repository.Repository;
+import com.airlinespoo.customers.model.DocumentType;
 
+/**
+ * Contrato de almacenamiento de tipos de documento.
+ */
+public interface DocumentTypeRepository extends Repository<DocumentType, String> {
 }
