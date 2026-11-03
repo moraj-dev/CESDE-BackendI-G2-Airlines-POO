@@ -13,7 +13,6 @@ import java.util.Optional;
 /**
  * Repositorio de clientes que guarda los datos en memoria.
  */
-
 public class InMemoryCustomerRepository extends InMemoryRepository<Customer, String>
     implements CustomerRepository {
 

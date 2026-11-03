@@ -8,7 +8,6 @@ import java.util.Objects;
 /**
  * Representa un país del catálogo de clientes.
  */
-
 public class Country implements Identifiable<Integer> {
 
     public static final int MAX_NAME_LENGTH = 20; // declaramos en rango como constante, se usa como lo pide la guia(seccion 5)

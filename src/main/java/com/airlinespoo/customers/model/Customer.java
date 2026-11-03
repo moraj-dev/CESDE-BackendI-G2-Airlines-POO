@@ -9,7 +9,6 @@ import java.util.Objects;
 /**
  * Cliente de la aerolínea. Se identifica por su documento de identidad.
  */
-
 public class Customer implements Identifiable<String> {
 
     // Constantes

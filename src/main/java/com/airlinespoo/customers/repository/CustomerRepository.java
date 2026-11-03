@@ -12,7 +12,6 @@ import java.util.Optional;
  * Contrato de almacenamiento de clientes, con búsquedas por correo, apellido,
  * país y tipo de documento.
  */
-
 public interface CustomerRepository extends Repository<Customer, String> {
 
     /** Busca un cliente por correo, sin distinguir mayúsculas. */

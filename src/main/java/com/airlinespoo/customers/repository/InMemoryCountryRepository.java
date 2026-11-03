@@ -6,7 +6,6 @@ import com.airlinespoo.customers.model.Country;
 /**
  * Repositorio de países que guarda los datos en memoria.
  */
-
 public class InMemoryCountryRepository extends InMemoryRepository<Country, Integer>
     implements CountryRepository {
 

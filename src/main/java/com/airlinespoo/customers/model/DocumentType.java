@@ -9,7 +9,6 @@ import java.util.Objects;
 /**
  * Tipo de documento de identidad (CC, TI, PA...). Su id es un código de 2 caracteres.
  */
-
 public class DocumentType implements Identifiable<String> {
 
     public static final int ID_LENGTH = 2; // constante de largo de el tipo de documento
