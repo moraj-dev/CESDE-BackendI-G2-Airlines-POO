@@ -6,6 +6,9 @@ import com.airlinespoo.core.exception.DuplicateException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.util.IdGenerator;
 import com.airlinespoo.core.util.Validator;
+
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 public class AirlineService {
@@ -35,6 +38,12 @@ public class AirlineService {
             throw new NotFoundException("No se encontro el airline con el id: " + id);
         }
         return found.get();
+    }
+
+    public List<Airline> listAirlines() {
+        List<Airline> airlines = airlineRepository.findAll();
+        airlines.sort(Comparator.comparing(Airline::getName, String.CASE_INSENSITIVE_ORDER));
+        return airlines;
     }
 }
 
