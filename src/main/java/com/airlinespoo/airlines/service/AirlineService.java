@@ -7,6 +7,7 @@ import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.util.IdGenerator;
 import com.airlinespoo.core.util.Validator;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +63,21 @@ public class AirlineService {
     public void deleteAirline(Integer id) {
         getAirline(id);
         airlineRepository.deleteById(id);
+    }
+
+    public long countAirlines() {
+        return airlineRepository.count();
+    }
+
+    public List<Airline> searchAirlinesByName(String text) {
+        String cleanSearch = Validator.requireText(text, "texto de busqueda").toLowerCase();
+        List<Airline> result = new ArrayList<>();
+        for (Airline airline : airlineRepository.findAll()) {
+            if (airline.getName().toLowerCase().contains(cleanSearch)) {
+                result.add(airline);
+            }
+        }
+        return result;
     }
 }
 
