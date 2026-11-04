@@ -43,7 +43,7 @@ public class AirlineMenu implements Menu {
     private void printOptions() {
         System.out.println("\n--- Aerolíneas ---");
         System.out.println("1. Listar aerolíneas");
-        System.out.println("2. Registar aerolínea");
+        System.out.println("2. Registrar aerolínea");
         System.out.println("0. Volver al menú");
     }
 
@@ -59,7 +59,7 @@ public class AirlineMenu implements Menu {
     }
 
     private void registerAirline() {
-        String name = input.readRequiredText("Nombre de la airolínea");
+        String name = input.readRequiredText("Nombre de la aerolínea");
         Airline created = airlineService.createAirline(name);
         System.out.println("Aerolínea registrada: " + created);
     }
