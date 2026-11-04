@@ -36,7 +36,7 @@ public class AirlineService {
     public Airline getAirline(Integer id) {
         Optional<Airline> found = airlineRepository.findById(id);
         if (found.isEmpty()) {
-            throw new NotFoundException("No se encontro el aerolínea con el id: " + id);
+            throw new NotFoundException("No se encontro la aerolínea con el id: " + id);
         }
         return found.get();
     }
@@ -70,7 +70,7 @@ public class AirlineService {
     }
 
     public List<Airline> searchAirlinesByName(String text) {
-        String cleanSearch = Validator.requireText(text, "texto de busqueda").toLowerCase();
+        String cleanSearch = Validator.requireText(text, "texto de búsqueda").toLowerCase();
         List<Airline> result = new ArrayList<>();
         for (Airline airline : airlineRepository.findAll()) {
             if (airline.getName().toLowerCase().contains(cleanSearch)) {
