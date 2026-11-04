@@ -5,6 +5,7 @@ import com.airlinespoo.airlines.service.AirlineService;
 import com.airlinespoo.core.exception.AirlinesException;
 import com.airlinespoo.core.ui.ConsoleInput;
 import com.airlinespoo.core.ui.Menu;
+
 import java.util.List;
 
 public class AirlineMenu implements Menu {
@@ -27,13 +28,15 @@ public class AirlineMenu implements Menu {
         int option;
         do {
             printOptions();
-            option = input.readInt("Elige una opción", 0, 4);
+            option = input.readInt("Elige una opción", 0, 6);
             try {
                 switch (option) {
                     case 1 -> listAirlines();
                     case 2 -> registerAirline();
                     case 3 -> showAirline();
                     case 4 -> renameAirline();
+                    case 5 -> searchAirlines();
+                    case 6 -> deleteAirline();
                     case 0 -> System.out.println("Volver al menú principal");
                 }
             } catch (AirlinesException e) {
@@ -48,6 +51,8 @@ public class AirlineMenu implements Menu {
         System.out.println("2. Registrar aerolínea");
         System.out.println("3. Consultar por id");
         System.out.println("4. Modificar nombre");
+        System.out.println("5. Buscar aerolínea");
+        System.out.println("6. Eliminar aerolínea");
         System.out.println("0. Volver al menú");
     }
 
@@ -81,4 +86,26 @@ public class AirlineMenu implements Menu {
         System.out.println("Aerolínea actualizada: " + updated);
     }
 
+    private void searchAirlines() {
+        String text = input.readRequiredText("Aerolínea a buscar");
+        List<Airline> found = airlineService.searchAirlinesByName(text);
+        if (found.isEmpty()) {
+            System.out.println("No se encontraron aerolíneas.");
+            return;
+        }
+        for (Airline airline : found) {
+            System.out.println(airline);
+        }
+    }
+
+    private void deleteAirline() {
+        int id = input.readInt("Id de la aerolínea", 1, Integer.MAX_VALUE);
+        Airline airline = airlineService.getAirline(id);
+        if (input.confirm("¿Eliminar " + airline.getName() + "?")) {
+            airlineService.deleteAirline(id);
+            System.out.println("Aerolínea eliminada: " + airline.getName());
+        } else {
+            System.out.println("Operación cancelada.");
+        }
+    }
 }
