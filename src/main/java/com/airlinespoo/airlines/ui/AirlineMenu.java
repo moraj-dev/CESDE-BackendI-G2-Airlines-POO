@@ -27,11 +27,12 @@ public class AirlineMenu implements Menu {
         int option;
         do {
             printOptions();
-            option = input.readInt("Elige una opción", 0, 2);
+            option = input.readInt("Elige una opción", 0, 3);
             try {
                 switch (option) {
                     case 1 -> listAirlines();
                     case 2 -> registerAirline();
+                    case 3 -> showAirline();
                     case 0 -> System.out.println("Volver al menú principal");
                 }
             } catch (AirlinesException e) {
@@ -44,6 +45,7 @@ public class AirlineMenu implements Menu {
         System.out.println("\n--- Aerolíneas ---");
         System.out.println("1. Listar aerolíneas");
         System.out.println("2. Registrar aerolínea");
+        System.out.println("3. Consultar por id");
         System.out.println("0. Volver al menú");
     }
 
@@ -62,6 +64,12 @@ public class AirlineMenu implements Menu {
         String name = input.readRequiredText("Nombre de la aerolínea");
         Airline created = airlineService.createAirline(name);
         System.out.println("Aerolínea registrada: " + created);
+    }
+
+    private void showAirline() {
+        int id = input.readInt("Id de la aerolínea", 1, Integer.MAX_VALUE);
+        Airline airline = airlineService.getAirline(id);
+        System.out.println(airline);
     }
 
 }
