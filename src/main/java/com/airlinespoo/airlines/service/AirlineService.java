@@ -45,5 +45,20 @@ public class AirlineService {
         airlines.sort(Comparator.comparing(Airline::getName, String.CASE_INSENSITIVE_ORDER));
         return airlines;
     }
+
+    public Airline renameAirline(Integer id, String name) {
+        Airline airline = getAirline(id);
+        String cleanName = Validator.normalize(name);
+
+        Optional<Airline> found = airlineRepository.findByName(cleanName);
+        if (found.isPresent() && !found.get().getId().equals(airline.getId())) {
+            throw new DuplicateException("Ya existe una aerolínea con el nombre '" +  cleanName + "'.");
+        }
+
+        airline.setName(cleanName);
+        return airlineRepository.update(airline);
+    }
+
+
 }
 
