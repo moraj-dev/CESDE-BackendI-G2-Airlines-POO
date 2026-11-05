@@ -36,7 +36,7 @@ public class AirlineService {
     public Airline getAirline(Integer id) {
         Optional<Airline> found = airlineRepository.findById(id);
         if (found.isEmpty()) {
-            throw new NotFoundException("No se encontro la aerolínea con el id: " + id);
+            throw new NotFoundException("No se encontro una aerolínea con el id: " + id);
         }
         return found.get();
     }
