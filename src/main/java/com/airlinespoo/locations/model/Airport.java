@@ -12,14 +12,14 @@ public class Airport implements Identifiable<UUID> {
     private City city;
 
     public Airport(UUID id, String name, City city){
-        this.id = Validator.requireNotNull(id, "id de aereopuerto");
-        this.name = Validator.requireText(name, "nombre de aereopuerto", 50);
+        this.id = Validator.requireNotNull(id, "id de aeropuerto");
+        this.name = Validator.requireText(name, "nombre de aeropuerto", 50);
         this.city = Validator.requireNotNull(city, "ciudad");
     }
 
     public Airport(String name, City city) {
         this.id = UUID.randomUUID();
-        this.name = Validator.requireText(name, "nombre de aereopuerto", 50);
+        this.name = Validator.requireText(name, "nombre de aeropuerto", 50);
         this.city = Validator.requireNotNull(city, "ciudad");
     }
 
