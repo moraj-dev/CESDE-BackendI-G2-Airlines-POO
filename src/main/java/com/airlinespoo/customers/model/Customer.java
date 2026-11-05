@@ -31,20 +31,20 @@ public class Customer implements Identifiable<String> {
     private Country country;
     private String address;
 
+    /**
+     * Crea un cliente válido.
+     *
+     * @param id              documento de identidad (obligatorio, no cambia)
+     * @param firstName       nombre (obligatorio)
+     * @param lastName        apellido (obligatorio)
+     * @param documentType    tipo de documento (obligatorio)
+     * @param telephoneNumber teléfono, solo dígitos con un + opcional al inicio
+     * @param email           correo (opcional, puede ser null)
+     * @param country         país (obligatorio)
+     * @param address         dirección (opcional, puede ser null)
+     */
     public Customer(String id, String firstName, String lastName, DocumentType documentType,
                     String telephoneNumber, String email, Country country, String address) {
-        /**
-         * Crea un cliente válido.
-         *
-         * @param id              documento de identidad (obligatorio, no cambia)
-         * @param firstName       nombre (obligatorio)
-         * @param lastName        apellido (obligatorio)
-         * @param documentType    tipo de documento (obligatorio)
-         * @param telephoneNumber teléfono, solo dígitos con un + opcional al inicio
-         * @param email           correo (opcional, puede ser null)
-         * @param country         país (obligatorio)
-         * @param address         dirección (opcional, puede ser null)
-         */
 
         this.id = validateId(id);
         this.firstName = validateFirstName(firstName);
@@ -76,8 +76,7 @@ public class Customer implements Identifiable<String> {
     private static String validateTelephoneNumber(String telephoneNumber) {
         String limpio = Validator.requireText(telephoneNumber, "teléfono", MAX_TELEPHONE_LENGTH);
         if (!limpio.matches(TELEPHONE_PATTERN)) {
-            throw new ValidationException(
-                "El campo 'teléfono' solo puede tener dígitos, con un + opcional al inicio.");
+            throw new ValidationException("El campo 'teléfono' solo puede tener dígitos, con un + opcional al inicio.");
         }
         return limpio;
     }
