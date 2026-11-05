@@ -10,6 +10,10 @@ import java.util.List;
 
 public class AirlineMenu implements Menu {
 
+    private static final String ID_PROMPT = "Id de la aerolínea";
+    private static final int MIN_ID = 1;
+    private static final int MAX_ID = Integer.MAX_VALUE;
+
     private final AirlineService airlineService;
     private final ConsoleInput input;
 
@@ -74,13 +78,13 @@ public class AirlineMenu implements Menu {
     }
 
     private void showAirline() {
-        int id = input.readInt("Id de la aerolínea", 1, Integer.MAX_VALUE);
+        int id = input.readInt(ID_PROMPT, MIN_ID, MAX_ID);
         Airline airline = airlineService.getAirline(id);
         System.out.println(airline);
     }
 
     private void renameAirline() {
-        int id = input.readInt("Id de la aerolínea", 1, Integer.MAX_VALUE);
+        int id = input.readInt(ID_PROMPT, MIN_ID, MAX_ID);
         String newName = input.readRequiredText("Nuevo nombre");
         Airline updated = airlineService.renameAirline(id, newName);
         System.out.println("Aerolínea actualizada: " + updated);
@@ -99,7 +103,7 @@ public class AirlineMenu implements Menu {
     }
 
     private void deleteAirline() {
-        int id = input.readInt("Id de la aerolínea", 1, Integer.MAX_VALUE);
+        int id = input.readInt(ID_PROMPT, MIN_ID, MAX_ID);
         Airline airline = airlineService.getAirline(id);
         if (input.confirm("¿Eliminar " + airline.getName() + "?")) {
             airlineService.deleteAirline(id);
