@@ -6,7 +6,7 @@ import com.airlinespoo.core.util.Validator;
 import java.util.Objects;
 
 /**
- * Representa una aerolínea en el sistema.
+ * Representa una aerolínea en el sistema, implementando la interfaz {@link Identifiable}.
  */
 public class Airline implements Identifiable<Integer> {
 
@@ -15,35 +15,48 @@ public class Airline implements Identifiable<Integer> {
     private String name;
 
     /**
-     * Constructor para crear una aerolínea.
+     * Construye una nueva instancia de {@code Airline}.
      *
-     * @param id identificador único de la aerolínea
-     * @param name nombre de la aerolínea (máximo 50 caracteres)
+     * @param id   identificador único de la aerolínea
+     * @param name nombre de la aerolínea
      */
     public Airline(int id, String name) {
         this.id = (int) Validator.requirePositive(id, "id de la aerolínea");
         this.name = validateName(name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getId() {
         return id;
     }
 
     /**
-     * Retorna el nombre de la aerolínea.
+     * Obtiene el nombre de la aerolínea.
+     *
+     * @return nombre actual
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Modifica el nombre de la aerolínea.
+     * Establece o modifica el nombre de la aerolínea previa validación.
+     *
+     * @param name nuevo nombre a asignar
      */
     public void setName(String name) {
         this.name = validateName(name);
     }
 
+    /**
+     * Valida que el nombre cumpla con los requisitos establecidos.
+     *
+     * @param name texto del nombre
+     * @return nombre validado y depurado
+     */
     private String validateName(String name) {
         return Validator.requireText(name, "nombre de la aerolínea", MAX_NAME_LENGTH);
     }

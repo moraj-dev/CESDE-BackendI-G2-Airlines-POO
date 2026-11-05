@@ -8,6 +8,9 @@ import com.airlinespoo.core.ui.Menu;
 
 import java.util.List;
 
+/**
+ * Menú interactivo de consola para la gestión de opciones de aerolíneas.
+ */
 public class AirlineMenu implements Menu {
 
     private static final String ID_PROMPT = "Id de la aerolínea";
@@ -17,16 +20,28 @@ public class AirlineMenu implements Menu {
     private final AirlineService airlineService;
     private final ConsoleInput input;
 
+    /**
+     * Inicializa el menú de aerolíneas con las dependencias necesarias.
+     *
+     * @param airlineService servicio de lógica de negocio para aerolíneas
+     * @param input          utilidad para la lectura de datos por consola
+     */
     public AirlineMenu(AirlineService airlineService, ConsoleInput input) {
         this.airlineService = airlineService;
         this.input = input;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String title() {
         return "Aerolíneas";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run() {
         int option;
@@ -49,6 +64,9 @@ public class AirlineMenu implements Menu {
         } while (option != 0);
     }
 
+    /**
+     * Imprime en consola las opciones disponibles del submenú.
+     */
     private void printOptions() {
         System.out.println("\n--- Aerolíneas ---");
         System.out.println("1. Listar aerolíneas");
