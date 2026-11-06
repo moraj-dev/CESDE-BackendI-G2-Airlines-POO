@@ -34,14 +34,15 @@ public class Customer implements Identifiable<String> {
     /**
      * Crea un cliente válido.
      *
-     * @param id              documento de identidad (obligatorio, no cambia)
-     * @param firstName       nombre (obligatorio)
-     * @param lastName        apellido (obligatorio)
+     * @param id              documento de identidad (obligatorio, máximo 20, no cambia)
+     * @param firstName       nombre (obligatorio, máximo 30)
+     * @param lastName        apellido (obligatorio, máximo 30)
      * @param documentType    tipo de documento (obligatorio)
-     * @param telephoneNumber teléfono, solo dígitos con un + opcional al inicio
-     * @param email           correo (opcional, puede ser null)
+     * @param telephoneNumber teléfono (obligatorio, máximo 15, solo dígitos con + opcional al inicio)
+     * @param email           correo (opcional; si existe, máximo 80 y formato válido)
      * @param country         país (obligatorio)
-     * @param address         dirección (opcional, puede ser null)
+     * @param address         dirección (opcional, máximo 40)
+     * @throws ValidationException si algún dato no cumple las reglas
      */
     public Customer(String id, String firstName, String lastName, DocumentType documentType,
                     String telephoneNumber, String email, Country country, String address) {
@@ -116,64 +117,114 @@ public class Customer implements Identifiable<String> {
         return id;
     }
 
+    /** @return nombre y apellido separados por un espacio */
     public String getFullName() {
         return firstName + " " + lastName;
     }
 
+    /** @return el nombre */
     public String getFirstName() {
         return firstName;
     }
 
+    /** @return el apellido */
     public String getLastName() {
         return lastName;
     }
 
+    /** @return el tipo de documento */
     public DocumentType getDocumentType() {
         return documentType;
     }
 
+    /** @return el teléfono */
     public String getTelephoneNumber() {
         return telephoneNumber;
     }
 
+    /** @return el correo, o {@code null} si no tiene */
     public String getEmail() {
         return email;
     }
 
+    /** @return el país */
     public Country getCountry() {
         return country;
     }
 
+    /** @return la dirección, o {@code null} si no tiene */
     public String getAddress() {
         return address;
     }
 
     // Setters (el id no tiene setter)
 
+    /**
+     * Cambia el nombre.
+     *
+     * @param firstName nuevo nombre (obligatorio, máximo 30)
+     * @throws ValidationException si no es válido
+     */
     public void setFirstName(String firstName) {
         this.firstName = validateFirstName(firstName);
     }
 
+    /**
+     * Cambia el apellido.
+     *
+     * @param lastName nuevo apellido (obligatorio, máximo 30)
+     * @throws ValidationException si no es válido
+     */
     public void setLastName(String lastName) {
         this.lastName = validateLastName(lastName);
     }
 
+    /**
+     * Cambia el tipo de documento.
+     *
+     * @param documentType nuevo tipo (obligatorio)
+     * @throws ValidationException si es {@code null}
+     */
     public void setDocumentType(DocumentType documentType) {
         this.documentType = validateDocumentType(documentType);
     }
 
+    /**
+     * Cambia el teléfono.
+     *
+     * @param telephoneNumber nuevo teléfono (obligatorio, máximo 15, solo dígitos con + opcional)
+     * @throws ValidationException si no es válido
+     */
     public void setTelephoneNumber(String telephoneNumber) {
         this.telephoneNumber = validateTelephoneNumber(telephoneNumber);
     }
 
+    /**
+     * Cambia el correo.
+     *
+     * @param email nuevo correo, o vacío/{@code null} para quitarlo
+     * @throws ValidationException si supera 80 caracteres o no tiene formato válido
+     */
     public void setEmail(String email) {
         this.email = validateEmail(email);
     }
 
+    /**
+     * Cambia el país.
+     *
+     * @param country nuevo país (obligatorio)
+     * @throws ValidationException si es {@code null}
+     */
     public void setCountry(Country country) {
         this.country = validateCountry(country);
     }
 
+    /**
+     * Cambia la dirección.
+     *
+     * @param address nueva dirección, o vacío/{@code null} para quitarla (máximo 40)
+     * @throws ValidationException si supera 40 caracteres
+     */
     public void setAddress(String address) {
         this.address = validateAddress(address);
     }

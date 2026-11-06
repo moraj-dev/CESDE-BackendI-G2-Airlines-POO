@@ -6,6 +6,8 @@ import com.airlinespoo.core.util.Validator;
 import com.airlinespoo.customers.model.DocumentType;
 import com.airlinespoo.customers.repository.CustomerRepository;
 import com.airlinespoo.customers.repository.DocumentTypeRepository;
+import com.airlinespoo.core.exception.ValidationException;
+import com.airlinespoo.core.exception.DuplicateException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -15,17 +17,39 @@ public class DocumentTypeService {
     private final DocumentTypeRepository documentTypeRepository;
     private final CustomerRepository customerRepository;
 
+    /**
+     * Crea el servicio de tipos de documento.
+     *
+     * @param documentTypeRepository repositorio de tipos de documento
+     * @param customerRepository     repositorio de clientes, para impedir eliminar tipos en uso
+     */
     public DocumentTypeService(DocumentTypeRepository documentTypeRepository,
                                CustomerRepository customerRepository) {
         this.documentTypeRepository = documentTypeRepository;
         this.customerRepository = customerRepository;
     }
 
+    /**
+     * Registra un tipo de documento nuevo; el id se normaliza a mayúsculas.
+     *
+     * @param id          código de 2 caracteres
+     * @param description descripción válida (máximo 20 caracteres)
+     * @return el tipo guardado
+     * @throws ValidationException si los datos no son válidos
+     * @throws DuplicateException  si ya existe un tipo con ese id
+     */
     public DocumentType createDocumentType(String id, String description) {
         DocumentType documentType = new DocumentType(id, description);
         return documentTypeRepository.create(documentType);
     }
 
+    /**
+     * Busca un tipo de documento por id, sin distinguir mayúsculas.
+     *
+     * @param id código del tipo
+     * @return el tipo encontrado
+     * @throws NotFoundException si no existe
+     */
     public DocumentType getDocumentType(String id) {
         String cleanId = cleanId(id);
         Optional<DocumentType> found = documentTypeRepository.findById(cleanId);
@@ -35,18 +59,37 @@ public class DocumentTypeService {
         return found.get();
     }
 
+    /**
+     * @return todos los tipos de documento, ordenados por descripción
+     */
     public List<DocumentType> listDocumentTypes() {
         List<DocumentType> documentTypes = documentTypeRepository.findAll();
         documentTypes.sort(Comparator.comparing(DocumentType::getDescription));
         return documentTypes;
     }
 
+    /**
+     * Cambia la descripción de un tipo de documento.
+     *
+     * @param id          código del tipo
+     * @param description nueva descripción válida
+     * @return el tipo actualizado
+     * @throws NotFoundException   si no existe
+     * @throws ValidationException si la descripción no es válida
+     */
     public DocumentType updateDocumentType(String id, String description) {
         DocumentType documentType = getDocumentType(id);
         documentType.setDescription(description);
         return documentTypeRepository.update(documentType);
     }
 
+    /**
+     * Elimina un tipo de documento que no esté en uso.
+     *
+     * @param id código del tipo
+     * @throws NotFoundException     si no existe
+     * @throws BusinessRuleException si algún cliente usa ese tipo
+     */
     public void deleteDocumentType(String id) {
         DocumentType documentType = getDocumentType(id);
         if (customerRepository.existsByDocumentType(documentType)) {

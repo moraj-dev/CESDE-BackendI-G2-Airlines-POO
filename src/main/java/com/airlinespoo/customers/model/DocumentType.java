@@ -17,6 +17,13 @@ public class DocumentType implements Identifiable<String> {
     private final String id;
     private String description;
 
+    /**
+     * Crea un tipo de documento válido.
+     *
+     * @param id          código de exactamente 2 caracteres; se guarda en mayúsculas
+     * @param description descripción (obligatoria, máximo 20 caracteres)
+     * @throws ValidationException si algún dato no cumple las reglas
+     */
     public DocumentType(String id, String description) {
         this.id = validateId(id); // validamos el id con validator del kit base
         this.description = validateDescription(description); // igual aca
@@ -27,10 +34,19 @@ public class DocumentType implements Identifiable<String> {
         return id;
     }
 
+    /**
+     * @return la descripción del tipo de documento
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Cambia la descripción del tipo de documento.
+     *
+     * @param description nueva descripción (obligatoria, máximo 20 caracteres)
+     * @throws ValidationException si la descripción no es válida
+     */
     public void setDescription(String description) {
         this.description = validateDescription(description);
     }
@@ -50,6 +66,7 @@ public class DocumentType implements Identifiable<String> {
         return Validator.requireText(description, "descripción", MAX_DESCRIPTION_LENGTH);
     }
 
+    /** Dos tipos son iguales si tienen el mismo id. */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -57,11 +74,13 @@ public class DocumentType implements Identifiable<String> {
         return id.equals(other.id);
     }
 
+    /** Código hash basado solo en el id. */
     @Override
     public int hashCode() {
         return Objects.hash(id);
     }
 
+    /** @return texto legible con el id y la descripción */
     @Override
     public String toString() {
         return "DocumentType{id='" + id + "', description='" + description + "'}";

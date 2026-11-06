@@ -13,6 +13,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Reglas de negocio de los clientes: registro, consulta, actualización de contacto,
+ * listados, búsquedas y eliminación.
+ */
 public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CountryService countryService;
@@ -22,6 +26,13 @@ public class CustomerService {
         Comparator.comparing(Customer::getLastName)
             .thenComparing(Customer::getFirstName);
 
+    /**
+     * Crea el servicio de clientes.
+     *
+     * @param customerRepository  repositorio de clientes
+     * @param countryService      servicio de países, para validar que el país exista
+     * @param documentTypeService servicio de tipos de documento, para validar que el tipo exista
+     */
     public CustomerService(CustomerRepository customerRepository,
                            CountryService countryService,
                            DocumentTypeService documentTypeService) {
@@ -30,6 +41,13 @@ public class CustomerService {
         this.documentTypeService = documentTypeService;
     }
 
+    /**
+     * Busca un cliente por documento.
+     *
+     * @param id documento de identidad
+     * @return el cliente encontrado
+     * @throws NotFoundException si no existe
+     */
     public Customer getCustomer(String id) {
         String cleanId = Validator.normalize(id);
         Optional<Customer> found = customerRepository.findById(cleanId);
@@ -39,6 +57,22 @@ public class CustomerService {
         return found.get();
     }
 
+    /**
+     * Registra un cliente nuevo.
+     *
+     * @param id              documento de identidad
+     * @param firstName       nombre
+     * @param lastName        apellido
+     * @param documentTypeId  código del tipo de documento, que debe existir
+     * @param telephoneNumber teléfono
+     * @param email           correo (opcional)
+     * @param countryId       id del país, que debe existir
+     * @param address         dirección (opcional)
+     * @return el cliente guardado
+     * @throws NotFoundException   si el país o el tipo de documento no existen
+     * @throws ValidationException si algún dato no es válido
+     * @throws DuplicateException  si el documento o el correo ya están registrados
+     */
     public Customer createCustomer(String id, String firstName, String lastName,
                                    String documentTypeId, String telephoneNumber,
                                    String email, int countryId, String address) {
@@ -53,17 +87,38 @@ public class CustomerService {
         return customerRepository.create(customer);
     }
 
+    /**
+     * @return todos los clientes, ordenados por apellido y luego por nombre
+     */
     public List<Customer> listCustomers() {
         List<Customer> customers = customerRepository.findAll();
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
 
+    /**
+     * Elimina un cliente.
+     *
+     * @param id documento de identidad
+     * @throws NotFoundException si no existe
+     */
     public void deleteCustomer(String id) {
         Customer customer = getCustomer(id);
         customerRepository.deleteById(customer.getId());
     }
 
+    /**
+     * Actualiza teléfono, correo y dirección de un cliente.
+     *
+     * @param id              documento de identidad
+     * @param telephoneNumber nuevo teléfono
+     * @param email           nuevo correo (opcional)
+     * @param address         nueva dirección (opcional)
+     * @return el cliente actualizado
+     * @throws NotFoundException   si el cliente no existe
+     * @throws DuplicateException  si el correo pertenece a otro cliente
+     * @throws ValidationException si algún dato no es válido
+     */
     public Customer updateCustomer(String id, String telephoneNumber,
                                    String email, String address) {
         Customer customer = getCustomer(id);
@@ -88,6 +143,12 @@ public class CustomerService {
 
     //metodos complemetarios
 
+    /**
+     * Busca un cliente por correo.
+     *
+     * @param email correo a buscar
+     * @return el cliente, o {@link Optional#empty()} si no existe
+     */
     public Optional<Customer> getCustomerByEmail(String email) {
         String cleanEmail = Validator.normalize(email);
         return customerRepository.findByEmail(cleanEmail);

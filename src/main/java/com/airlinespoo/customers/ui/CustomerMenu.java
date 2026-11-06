@@ -13,6 +13,10 @@ import com.airlinespoo.customers.service.DocumentTypeService;
 
 import java.util.List;
 
+/**
+ * Menú de consola de clientes: registrar, consultar, actualizar contacto, listar,
+ * buscar por apellido y eliminar. Solo habla con los servicios.
+ */
 public class CustomerMenu implements Menu {
 
     private static final int MAX_OPTION = 7;
@@ -22,6 +26,14 @@ public class CustomerMenu implements Menu {
     private final CountryService countryService;
     private final DocumentTypeService documentTypeService;
 
+    /**
+     * Crea el menú con el lector de consola y los servicios que necesita.
+     *
+     * @param input               lector de consola compartido
+     * @param customerService     servicio de clientes
+     * @param countryService      servicio de países
+     * @param documentTypeService servicio de tipos de documento
+     */
     public CustomerMenu(ConsoleInput input, CustomerService customerService, CountryService countryService, DocumentTypeService documentTypeService) {
         this.input = input;
         this.customerService = customerService;
@@ -29,11 +41,13 @@ public class CustomerMenu implements Menu {
         this.documentTypeService = documentTypeService;
     }
 
+    /** @return el título que se muestra en el menú principal */
     @Override
     public String title() {
         return "Clientes";
     }
 
+    /** Muestra el menú y atiende al usuario hasta que elige volver. */
     @Override
     public void run() {
         boolean back = false;
