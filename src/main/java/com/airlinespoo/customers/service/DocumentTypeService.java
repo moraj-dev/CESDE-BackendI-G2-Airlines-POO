@@ -3,9 +3,7 @@ package com.airlinespoo.customers.service;
 import com.airlinespoo.core.exception.BusinessRuleException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.util.Validator;
-import com.airlinespoo.customers.model.Country;
 import com.airlinespoo.customers.model.DocumentType;
-import com.airlinespoo.customers.repository.CountryRepository;
 import com.airlinespoo.customers.repository.CustomerRepository;
 import com.airlinespoo.customers.repository.DocumentTypeRepository;
 
