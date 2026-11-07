@@ -15,33 +15,49 @@ import java.util.List;
 
 /**
  * Menú de consola de clientes: registrar, consultar, actualizar contacto, listar,
- * buscar por apellido y eliminar. Solo habla con los servicios.
+ * buscar por apellido, eliminar y acceso a los menús de países y tipos de documento.
+ * Solo habla con los servicios.
  */
 public class CustomerMenu implements Menu {
 
-    private static final int MAX_OPTION = 7;
+    private static final int OPTION_REGISTER = 1;
+    private static final int OPTION_GET = 2;
+    private static final int OPTION_UPDATE = 3;
+    private static final int OPTION_LIST = 4;
+    private static final int OPTION_SEARCH = 5;
+    private static final int OPTION_DELETE = 6;
+    private static final int OPTION_COUNTRIES = 7;
+    private static final int OPTION_DOCUMENT_TYPES = 8;
+    private static final int OPTION_BACK = 9;
 
     private final ConsoleInput input;
     private final CustomerService customerService;
     private final CountryService countryService;
     private final DocumentTypeService documentTypeService;
+    private final Menu countryMenu;
+    private final Menu documentTypeMenu;
 
     /**
-     * Crea el menú con el lector de consola y los servicios que necesita.
+     * Crea el menú con el lector de consola, los servicios y los submenús que necesita.
      *
      * @param input               lector de consola compartido
      * @param customerService     servicio de clientes
      * @param countryService      servicio de países
      * @param documentTypeService servicio de tipos de documento
+     * @param countryMenu         menú de países
+     * @param documentTypeMenu    menú de tipos de documento
      */
-    public CustomerMenu(ConsoleInput input, CustomerService customerService, CountryService countryService, DocumentTypeService documentTypeService) {
+    public CustomerMenu(ConsoleInput input, CustomerService customerService,
+                        CountryService countryService, DocumentTypeService documentTypeService,
+                        Menu countryMenu, Menu documentTypeMenu) {
         this.input = input;
         this.customerService = customerService;
         this.countryService = countryService;
         this.documentTypeService = documentTypeService;
+        this.countryMenu = countryMenu;
+        this.documentTypeMenu = documentTypeMenu;
     }
 
-    /** @return el título que se muestra en el menú principal */
     @Override
     public String title() {
         return "Clientes";
@@ -52,20 +68,15 @@ public class CustomerMenu implements Menu {
     public void run() {
         boolean back = false;
         while (!back) {
-            System.out.println("------ MENU ------");
-            System.out.println("1. Registrar");
-            System.out.println("2. Consultar");
-            System.out.println("3. actualizar contacto");
-            System.out.println("4. Listar");
-            System.out.println("5. buscar");
-            System.out.println("6. Eliminar");
-            System.out.println("7. Volver");
-            System.out.println("------------------");
+            printOptions();
+            int option = input.readInt("Elija una opción", OPTION_REGISTER, OPTION_BACK);
 
-            int option = input.readInt("Elija una opción", 1, MAX_OPTION);
-
-            if (option == MAX_OPTION) {
+            if (option == OPTION_BACK) {
                 back = true;
+            } else if (option == OPTION_COUNTRIES) {
+                countryMenu.run();
+            } else if (option == OPTION_DOCUMENT_TYPES) {
+                documentTypeMenu.run();
             } else {
                 execute(option);
                 input.pause();
@@ -73,27 +84,44 @@ public class CustomerMenu implements Menu {
         }
     }
 
-    // ejecuta la opción elegida; si el servicio lanza un error, lo muestra en lugar de cerrar el programa
+    private void printOptions() {
+        System.out.println();
+        System.out.println("------ CLIENTES ------");
+        System.out.println(OPTION_REGISTER + ". Registrar cliente");
+        System.out.println(OPTION_GET + ". Consultar por documento");
+        System.out.println(OPTION_UPDATE + ". Actualizar contacto");
+        System.out.println(OPTION_LIST + ". Listar clientes");
+        System.out.println(OPTION_SEARCH + ". Buscar por apellido");
+        System.out.println(OPTION_DELETE + ". Eliminar cliente");
+        System.out.println(OPTION_COUNTRIES + ". Gestionar países");
+        System.out.println(OPTION_DOCUMENT_TYPES + ". Gestionar tipos de documento");
+        System.out.println(OPTION_BACK + ". Volver");
+        System.out.println("----------------------");
+    }
+
+    // Ejecuta la opción elegida; si el servicio lanza un error, lo muestra en lugar de cerrar el programa.
     private void execute(int option) {
         try {
             switch (option) {
-                case 1:
+                case OPTION_REGISTER:
                     registerCustomer();
                     break;
-                case 2:
+                case OPTION_GET:
                     getCustomer();
                     break;
-                case 3:
+                case OPTION_UPDATE:
                     updateCustomer();
                     break;
-                case 4:
+                case OPTION_LIST:
                     listCustomers();
                     break;
-                case 5:
+                case OPTION_SEARCH:
                     searchByLastName();
                     break;
-                case 6:
+                case OPTION_DELETE:
                     deleteCustomer();
+                    break;
+                default:
                     break;
             }
         } catch (AirlinesException e) {
@@ -101,9 +129,8 @@ public class CustomerMenu implements Menu {
         }
     }
 
-    // 1
     private void registerCustomer() {
-        System.out.println("Necesitamos esta informacion");
+        System.out.println("---- Registrar cliente ----");
         String id = input.readRequiredText("Documento");
         String firstName = input.readRequiredText("Nombre");
         String lastName = input.readRequiredText("Apellido");
@@ -124,23 +151,26 @@ public class CustomerMenu implements Menu {
             address);
         System.out.println("Cliente registrado con éxito: " + customer);
     }
+
     private DocumentType chooseDocumentType() {
         List<DocumentType> types = documentTypeService.listDocumentTypes();
         if (types.isEmpty()) {
-            throw new BusinessRuleException("No hay tipos de documento registrados.");
+            throw new BusinessRuleException(
+                "No hay tipos de documento registrados. Regístralos en 'Gestionar tipos de documento'.");
         }
         for (int i = 0; i < types.size(); i++) {
             DocumentType type = types.get(i);
             System.out.println((i + 1) + ". " + type.getId() + " - " + type.getDescription());
         }
         int choice = input.readInt("Elija el tipo de documento", 1, types.size());
-        return types.get(choice - 1); // devuelve de número visible a posición de la lista
+        return types.get(choice - 1); // pasa del número visible a la posición de la lista
     }
 
     private Country chooseCountry() {
         List<Country> countries = countryService.listCountries();
         if (countries.isEmpty()) {
-            throw new BusinessRuleException("No hay países registrados.");
+            throw new BusinessRuleException(
+                "No hay países registrados. Regístralos en 'Gestionar países'.");
         }
         for (int i = 0; i < countries.size(); i++) {
             System.out.println((i + 1) + ". " + countries.get(i).getName());
@@ -149,14 +179,12 @@ public class CustomerMenu implements Menu {
         return countries.get(choice - 1);
     }
 
-    // 2
     private void getCustomer() {
         System.out.println("---- Consultar cliente ----");
         String id = input.readRequiredText("Documento de identidad");
         printDetails(customerService.getCustomer(id));
     }
 
-    // 3
     private void updateCustomer() {
         System.out.println("---- Actualizar contacto ----");
         String id = input.readRequiredText("Documento de identidad");
@@ -182,20 +210,17 @@ public class CustomerMenu implements Menu {
         System.out.println("Contacto actualizado: " + updated);
     }
 
-    // 4
     private void listCustomers() {
         System.out.println("---- Lista de clientes ----");
         printList(customerService.listCustomers());
     }
 
-    // 5
     private void searchByLastName() {
         System.out.println("---- Buscar por apellido ----");
         String text = input.readRequiredText("Apellido (o parte de él)");
         printList(customerService.searchCustomersByLastName(text));
     }
 
-    // 6
     private void deleteCustomer() {
         System.out.println("---- Eliminar cliente ----");
         String id = input.readRequiredText("Documento de identidad");
@@ -209,11 +234,11 @@ public class CustomerMenu implements Menu {
     }
 
     private void printList(List<Customer> customers) {
-        if (customers.isEmpty()) { // comprueva que no este vacia la lista
+        if (customers.isEmpty()) {
             System.out.println("No hay clientes para mostrar.");
             return;
         }
-        for (Customer customer : customers) { // imprime la la lista de clientes
+        for (Customer customer : customers) {
             System.out.println(customer);
         }
     }

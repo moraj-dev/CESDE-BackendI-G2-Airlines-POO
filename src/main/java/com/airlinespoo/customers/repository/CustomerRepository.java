@@ -25,7 +25,7 @@ public class CustomerRepository implements ICustomerRepository {
             + "INNER JOIN dbo.tblCountries p ON c.CountryId = p.CountryId ";
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=NOMBRE_BD;encrypt=false";
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=NOMBRE_BD;encrypt=false;loginTimeout=5";
         String user = "USUARIO";
         String password = "PASSWORD";
         return DriverManager.getConnection(url, user, password);

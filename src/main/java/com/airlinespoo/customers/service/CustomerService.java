@@ -18,25 +18,26 @@ import java.util.Optional;
  * listados, búsquedas y eliminación.
  */
 public class CustomerService {
-    private final ICustomerRepository iCustomerRepository;
-    private final CountryService countryService;
-    private final DocumentTypeService documentTypeService;
 
     private static final Comparator<Customer> BY_LAST_NAME_THEN_FIRST_NAME =
         Comparator.comparing(Customer::getLastName)
             .thenComparing(Customer::getFirstName);
 
+    private final ICustomerRepository customerRepository;
+    private final CountryService countryService;
+    private final DocumentTypeService documentTypeService;
+
     /**
      * Crea el servicio de clientes.
      *
-     * @param iCustomerRepository  repositorio de clientes
+     * @param customerRepository  repositorio de clientes
      * @param countryService      servicio de países, para validar que el país exista
      * @param documentTypeService servicio de tipos de documento, para validar que el tipo exista
      */
-    public CustomerService(ICustomerRepository iCustomerRepository,
+    public CustomerService(ICustomerRepository customerRepository,
                            CountryService countryService,
                            DocumentTypeService documentTypeService) {
-        this.iCustomerRepository = iCustomerRepository;
+        this.customerRepository = customerRepository;
         this.countryService = countryService;
         this.documentTypeService = documentTypeService;
     }
@@ -50,7 +51,7 @@ public class CustomerService {
      */
     public Customer getCustomer(String id) {
         String cleanId = Validator.normalize(id);
-        Optional<Customer> found = iCustomerRepository.findById(cleanId);
+        Optional<Customer> found = customerRepository.findById(cleanId);
         if (found.isEmpty()) {
             throw new NotFoundException("cliente", cleanId);
         }
@@ -81,17 +82,21 @@ public class CustomerService {
         Customer customer = new Customer(id, firstName, lastName, documentType,
             telephoneNumber, email, country, address);
 
-        if (customer.getEmail() != null && iCustomerRepository.existsByEmail(customer.getEmail())) {
+        if (customerRepository.existsById(customer.getId())) {
+            throw new DuplicateException("cliente", customer.getId());
+        }
+        if (customer.getEmail() != null && customerRepository.existsByEmail(customer.getEmail())) {
             throw new DuplicateException("Ya existe un cliente con el correo '" + customer.getEmail() + "'.");
         }
-        return iCustomerRepository.create(customer);
+        customerRepository.create(customer);
+        return customer;
     }
 
     /**
      * @return todos los clientes, ordenados por apellido y luego por nombre
      */
     public List<Customer> listCustomers() {
-        List<Customer> customers = iCustomerRepository.findAll();
+        List<Customer> customers = customerRepository.findAll();
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
@@ -104,7 +109,7 @@ public class CustomerService {
      */
     public void deleteCustomer(String id) {
         Customer customer = getCustomer(id);
-        iCustomerRepository.deleteById(customer.getId());
+        customerRepository.deleteById(customer.getId());
     }
 
     /**
@@ -129,7 +134,7 @@ public class CustomerService {
         }
 
         if (cleanEmail != null) {
-            Optional<Customer> owner = iCustomerRepository.findByEmail(cleanEmail);
+            Optional<Customer> owner = customerRepository.findByEmail(cleanEmail);
             if (owner.isPresent() && !owner.get().getId().equals(customer.getId())) {
                 throw new DuplicateException("Ya existe un cliente con el correo '" + cleanEmail + "'.");
             }
@@ -138,10 +143,11 @@ public class CustomerService {
         customer.setTelephoneNumber(telephoneNumber);
         customer.setEmail(cleanEmail);
         customer.setAddress(address);
-        return iCustomerRepository.update(customer);
+        customerRepository.update(customer);
+        return customer;
     }
 
-    //metodos complemetarios
+    // métodos complementarios
 
     /**
      * Busca un cliente por correo.
@@ -151,8 +157,9 @@ public class CustomerService {
      */
     public Optional<Customer> getCustomerByEmail(String email) {
         String cleanEmail = Validator.normalize(email);
-        return iCustomerRepository.findByEmail(cleanEmail);
+        return customerRepository.findByEmail(cleanEmail);
     }
+
     /**
      * Busca clientes cuyo apellido contenga el texto, sin distinguir mayúsculas.
      *
@@ -165,7 +172,7 @@ public class CustomerService {
         if (cleanText == null || cleanText.isEmpty()) {
             throw new ValidationException("El campo 'apellido a buscar' no puede estar vacío.");
         }
-        List<Customer> customers = iCustomerRepository.findByLastNameContaining(cleanText);
+        List<Customer> customers = customerRepository.findByLastNameContaining(cleanText);
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
@@ -179,7 +186,7 @@ public class CustomerService {
      */
     public List<Customer> listCustomersByCountry(int countryId) {
         Country country = countryService.getCountry(countryId);
-        List<Customer> customers = iCustomerRepository.findByCountry(country);
+        List<Customer> customers = customerRepository.findByCountry(country);
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
@@ -193,7 +200,7 @@ public class CustomerService {
      */
     public List<Customer> listCustomersByDocumentType(String documentTypeId) {
         DocumentType documentType = documentTypeService.getDocumentType(documentTypeId);
-        List<Customer> customers = iCustomerRepository.findByDocumentType(documentType);
+        List<Customer> customers = customerRepository.findByDocumentType(documentType);
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
@@ -204,6 +211,6 @@ public class CustomerService {
      * @return la cantidad de clientes
      */
     public long countCustomers() {
-        return iCustomerRepository.count();
+        return customerRepository.count();
     }
 }

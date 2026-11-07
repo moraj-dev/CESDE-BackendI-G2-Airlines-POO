@@ -15,7 +15,7 @@ import java.util.Optional;
 public class DocumentTypeRepository implements IDocumentTypeRepository {
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=NOMBRE_BD;encrypt=false";
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=NOMBRE_BD;encrypt=false;loginTimeout=5";
         String user = "USUARIO";
         String password = "PASSWORD";
         return DriverManager.getConnection(url, user, password);
