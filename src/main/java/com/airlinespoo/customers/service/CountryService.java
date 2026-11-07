@@ -3,8 +3,8 @@ package com.airlinespoo.customers.service;
 import com.airlinespoo.core.exception.BusinessRuleException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.customers.model.Country;
-import com.airlinespoo.customers.repository.CountryRepository;
-import com.airlinespoo.customers.repository.CustomerRepository;
+import com.airlinespoo.customers.repository.ICountryRepository;
+import com.airlinespoo.customers.repository.ICustomerRepository;
 import com.airlinespoo.core.exception.ValidationException;
 import com.airlinespoo.core.exception.DuplicateException;
 
@@ -17,19 +17,19 @@ import java.util.Optional;
  */
 public class CountryService {
 
-    private final CountryRepository countryRepository;
-    private final CustomerRepository customerRepository;
+    private final ICountryRepository iCountryRepository;
+    private final ICustomerRepository iCustomerRepository;
 
     /**
      * Crea el servicio de países.
      *
-     * @param countryRepository  repositorio de países
-     * @param customerRepository repositorio de clientes, para impedir eliminar países en uso
+     * @param iCountryRepository  repositorio de países
+     * @param iCustomerRepository repositorio de clientes, para impedir eliminar países en uso
      */
-    public CountryService(CountryRepository countryRepository,
-                          CustomerRepository customerRepository) {
-        this.countryRepository = countryRepository;
-        this.customerRepository = customerRepository;
+    public CountryService(ICountryRepository iCountryRepository,
+                          ICustomerRepository iCustomerRepository) {
+        this.iCountryRepository = iCountryRepository;
+        this.iCustomerRepository = iCustomerRepository;
     }
 
     /**
@@ -43,7 +43,7 @@ public class CountryService {
      */
     public Country createCountry(int id, String name) {
         Country country = new Country(id, name);
-        return countryRepository.create(country);
+        return iCountryRepository.create(country);
     }
 
     /**
@@ -54,7 +54,7 @@ public class CountryService {
      * @throws NotFoundException si no existe
      */
     public Country getCountry(int id) {
-        Optional<Country> found = countryRepository.findById(id);
+        Optional<Country> found = iCountryRepository.findById(id);
         if (found.isEmpty()) {
             throw new NotFoundException("país", id);
         }
@@ -65,7 +65,7 @@ public class CountryService {
      * @return todos los países, ordenados por nombre
      */
     public List<Country> listCountries() {
-        List<Country> paises = countryRepository.findAll();
+        List<Country> paises = iCountryRepository.findAll();
         paises.sort(Comparator.comparing(Country::getName));
         return paises;
     }
@@ -82,7 +82,7 @@ public class CountryService {
     public Country updateCountry(int id, String name) {
         Country country = getCountry(id);
         country.setName(name);
-        return countryRepository.update(country);
+        return iCountryRepository.update(country);
     }
 
     /**
@@ -94,9 +94,9 @@ public class CountryService {
      */
     public void deleteCountry(int id) {
         Country country = getCountry(id);
-        if (customerRepository.existsByCountry(country)) {
+        if (iCustomerRepository.existsByCountry(country)) {
             throw new BusinessRuleException("No se puede eliminar el país porque tiene clientes.");
         }
-        countryRepository.deleteById(id);
+        iCountryRepository.deleteById(id);
     }
 }

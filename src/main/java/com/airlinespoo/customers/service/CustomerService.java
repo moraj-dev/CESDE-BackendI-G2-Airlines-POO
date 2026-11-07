@@ -7,7 +7,7 @@ import com.airlinespoo.core.util.Validator;
 import com.airlinespoo.customers.model.Country;
 import com.airlinespoo.customers.model.Customer;
 import com.airlinespoo.customers.model.DocumentType;
-import com.airlinespoo.customers.repository.CustomerRepository;
+import com.airlinespoo.customers.repository.ICustomerRepository;
 
 import java.util.Comparator;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.Optional;
  * listados, búsquedas y eliminación.
  */
 public class CustomerService {
-    private final CustomerRepository customerRepository;
+    private final ICustomerRepository iCustomerRepository;
     private final CountryService countryService;
     private final DocumentTypeService documentTypeService;
 
@@ -29,14 +29,14 @@ public class CustomerService {
     /**
      * Crea el servicio de clientes.
      *
-     * @param customerRepository  repositorio de clientes
+     * @param iCustomerRepository  repositorio de clientes
      * @param countryService      servicio de países, para validar que el país exista
      * @param documentTypeService servicio de tipos de documento, para validar que el tipo exista
      */
-    public CustomerService(CustomerRepository customerRepository,
+    public CustomerService(ICustomerRepository iCustomerRepository,
                            CountryService countryService,
                            DocumentTypeService documentTypeService) {
-        this.customerRepository = customerRepository;
+        this.iCustomerRepository = iCustomerRepository;
         this.countryService = countryService;
         this.documentTypeService = documentTypeService;
     }
@@ -50,7 +50,7 @@ public class CustomerService {
      */
     public Customer getCustomer(String id) {
         String cleanId = Validator.normalize(id);
-        Optional<Customer> found = customerRepository.findById(cleanId);
+        Optional<Customer> found = iCustomerRepository.findById(cleanId);
         if (found.isEmpty()) {
             throw new NotFoundException("cliente", cleanId);
         }
@@ -81,17 +81,17 @@ public class CustomerService {
         Customer customer = new Customer(id, firstName, lastName, documentType,
             telephoneNumber, email, country, address);
 
-        if (customer.getEmail() != null && customerRepository.existsByEmail(customer.getEmail())) {
+        if (customer.getEmail() != null && iCustomerRepository.existsByEmail(customer.getEmail())) {
             throw new DuplicateException("Ya existe un cliente con el correo '" + customer.getEmail() + "'.");
         }
-        return customerRepository.create(customer);
+        return iCustomerRepository.create(customer);
     }
 
     /**
      * @return todos los clientes, ordenados por apellido y luego por nombre
      */
     public List<Customer> listCustomers() {
-        List<Customer> customers = customerRepository.findAll();
+        List<Customer> customers = iCustomerRepository.findAll();
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
@@ -104,7 +104,7 @@ public class CustomerService {
      */
     public void deleteCustomer(String id) {
         Customer customer = getCustomer(id);
-        customerRepository.deleteById(customer.getId());
+        iCustomerRepository.deleteById(customer.getId());
     }
 
     /**
@@ -129,7 +129,7 @@ public class CustomerService {
         }
 
         if (cleanEmail != null) {
-            Optional<Customer> owner = customerRepository.findByEmail(cleanEmail);
+            Optional<Customer> owner = iCustomerRepository.findByEmail(cleanEmail);
             if (owner.isPresent() && !owner.get().getId().equals(customer.getId())) {
                 throw new DuplicateException("Ya existe un cliente con el correo '" + cleanEmail + "'.");
             }
@@ -138,7 +138,7 @@ public class CustomerService {
         customer.setTelephoneNumber(telephoneNumber);
         customer.setEmail(cleanEmail);
         customer.setAddress(address);
-        return customerRepository.update(customer);
+        return iCustomerRepository.update(customer);
     }
 
     //metodos complemetarios
@@ -151,7 +151,7 @@ public class CustomerService {
      */
     public Optional<Customer> getCustomerByEmail(String email) {
         String cleanEmail = Validator.normalize(email);
-        return customerRepository.findByEmail(cleanEmail);
+        return iCustomerRepository.findByEmail(cleanEmail);
     }
     /**
      * Busca clientes cuyo apellido contenga el texto, sin distinguir mayúsculas.
@@ -165,7 +165,7 @@ public class CustomerService {
         if (cleanText == null || cleanText.isEmpty()) {
             throw new ValidationException("El campo 'apellido a buscar' no puede estar vacío.");
         }
-        List<Customer> customers = customerRepository.findByLastNameContaining(cleanText);
+        List<Customer> customers = iCustomerRepository.findByLastNameContaining(cleanText);
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
@@ -179,7 +179,7 @@ public class CustomerService {
      */
     public List<Customer> listCustomersByCountry(int countryId) {
         Country country = countryService.getCountry(countryId);
-        List<Customer> customers = customerRepository.findByCountry(country);
+        List<Customer> customers = iCustomerRepository.findByCountry(country);
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
@@ -193,7 +193,7 @@ public class CustomerService {
      */
     public List<Customer> listCustomersByDocumentType(String documentTypeId) {
         DocumentType documentType = documentTypeService.getDocumentType(documentTypeId);
-        List<Customer> customers = customerRepository.findByDocumentType(documentType);
+        List<Customer> customers = iCustomerRepository.findByDocumentType(documentType);
         customers.sort(BY_LAST_NAME_THEN_FIRST_NAME);
         return customers;
     }
@@ -204,6 +204,6 @@ public class CustomerService {
      * @return la cantidad de clientes
      */
     public long countCustomers() {
-        return customerRepository.count();
+        return iCustomerRepository.count();
     }
 }

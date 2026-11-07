@@ -4,8 +4,8 @@ import com.airlinespoo.core.exception.BusinessRuleException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.util.Validator;
 import com.airlinespoo.customers.model.DocumentType;
-import com.airlinespoo.customers.repository.CustomerRepository;
-import com.airlinespoo.customers.repository.DocumentTypeRepository;
+import com.airlinespoo.customers.repository.ICustomerRepository;
+import com.airlinespoo.customers.repository.IDocumentTypeRepository;
 import com.airlinespoo.core.exception.ValidationException;
 import com.airlinespoo.core.exception.DuplicateException;
 
@@ -14,19 +14,19 @@ import java.util.List;
 import java.util.Optional;
 
 public class DocumentTypeService {
-    private final DocumentTypeRepository documentTypeRepository;
-    private final CustomerRepository customerRepository;
+    private final IDocumentTypeRepository iDocumentTypeRepository;
+    private final ICustomerRepository iCustomerRepository;
 
     /**
      * Crea el servicio de tipos de documento.
      *
-     * @param documentTypeRepository repositorio de tipos de documento
-     * @param customerRepository     repositorio de clientes, para impedir eliminar tipos en uso
+     * @param iDocumentTypeRepository repositorio de tipos de documento
+     * @param iCustomerRepository     repositorio de clientes, para impedir eliminar tipos en uso
      */
-    public DocumentTypeService(DocumentTypeRepository documentTypeRepository,
-                               CustomerRepository customerRepository) {
-        this.documentTypeRepository = documentTypeRepository;
-        this.customerRepository = customerRepository;
+    public DocumentTypeService(IDocumentTypeRepository iDocumentTypeRepository,
+                               ICustomerRepository iCustomerRepository) {
+        this.iDocumentTypeRepository = iDocumentTypeRepository;
+        this.iCustomerRepository = iCustomerRepository;
     }
 
     /**
@@ -40,7 +40,7 @@ public class DocumentTypeService {
      */
     public DocumentType createDocumentType(String id, String description) {
         DocumentType documentType = new DocumentType(id, description);
-        return documentTypeRepository.create(documentType);
+        return iDocumentTypeRepository.create(documentType);
     }
 
     /**
@@ -52,7 +52,7 @@ public class DocumentTypeService {
      */
     public DocumentType getDocumentType(String id) {
         String cleanId = cleanId(id);
-        Optional<DocumentType> found = documentTypeRepository.findById(cleanId);
+        Optional<DocumentType> found = iDocumentTypeRepository.findById(cleanId);
         if (found.isEmpty()) {
             throw new NotFoundException("tipo de documento", cleanId);
         }
@@ -63,7 +63,7 @@ public class DocumentTypeService {
      * @return todos los tipos de documento, ordenados por descripción
      */
     public List<DocumentType> listDocumentTypes() {
-        List<DocumentType> documentTypes = documentTypeRepository.findAll();
+        List<DocumentType> documentTypes = iDocumentTypeRepository.findAll();
         documentTypes.sort(Comparator.comparing(DocumentType::getDescription));
         return documentTypes;
     }
@@ -80,7 +80,7 @@ public class DocumentTypeService {
     public DocumentType updateDocumentType(String id, String description) {
         DocumentType documentType = getDocumentType(id);
         documentType.setDescription(description);
-        return documentTypeRepository.update(documentType);
+        return iDocumentTypeRepository.update(documentType);
     }
 
     /**
@@ -92,10 +92,10 @@ public class DocumentTypeService {
      */
     public void deleteDocumentType(String id) {
         DocumentType documentType = getDocumentType(id);
-        if (customerRepository.existsByDocumentType(documentType)) {
+        if (iCustomerRepository.existsByDocumentType(documentType)) {
             throw new BusinessRuleException("No se puede eliminar el tipo de documento porque tiene clientes.");
         }
-        documentTypeRepository.deleteById(documentType.getId());
+        iDocumentTypeRepository.deleteById(documentType.getId());
     }
 
     private String cleanId(String id) {

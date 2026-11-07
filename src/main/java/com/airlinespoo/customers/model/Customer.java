@@ -1,28 +1,22 @@
 package com.airlinespoo.customers.model;
 
-import com.airlinespoo.core.exception.ValidationException;
-import com.airlinespoo.core.model.Identifiable;
-import com.airlinespoo.core.util.Validator;
-
 import java.util.Objects;
 
 /**
  * Cliente de la aerolínea. Se identifica por su documento de identidad.
  */
-public class Customer implements Identifiable<String> {
+public class Customer {
 
-    // Constantes
     public static final int MAX_ID_LENGTH = 20;
     public static final int MAX_FIRST_NAME_LENGTH = 30;
     public static final int MAX_LAST_NAME_LENGTH = 30;
     public static final int MAX_TELEPHONE_LENGTH = 15;
     public static final int MAX_EMAIL_LENGTH = 80;
     public static final int MAX_ADDRESS_LENGTH = 40;
-    private static final String EMAIL_PATTERN = "^[^@\\s]+@[^@\\s]+$";
-    private static final String TELEPHONE_PATTERN = "^\\+?\\d+$";
+    public static final String EMAIL_PATTERN = "^[^@\\s]+@[^@\\s]+$";
+    public static final String TELEPHONE_PATTERN = "^\\+?\\d+$";
 
-    // Atributos
-    private final String id;
+    private String id;
     private String firstName;
     private String lastName;
     private DocumentType documentType;
@@ -31,211 +25,94 @@ public class Customer implements Identifiable<String> {
     private Country country;
     private String address;
 
-    /**
-     * Crea un cliente válido.
-     *
-     * @param id              documento de identidad (obligatorio, máximo 20, no cambia)
-     * @param firstName       nombre (obligatorio, máximo 30)
-     * @param lastName        apellido (obligatorio, máximo 30)
-     * @param documentType    tipo de documento (obligatorio)
-     * @param telephoneNumber teléfono (obligatorio, máximo 15, solo dígitos con + opcional al inicio)
-     * @param email           correo (opcional; si existe, máximo 80 y formato válido)
-     * @param country         país (obligatorio)
-     * @param address         dirección (opcional, máximo 40)
-     * @throws ValidationException si algún dato no cumple las reglas
-     */
     public Customer(String id, String firstName, String lastName, DocumentType documentType,
                     String telephoneNumber, String email, Country country, String address) {
-
-        this.id = validateId(id);
-        this.firstName = validateFirstName(firstName);
-        this.lastName = validateLastName(lastName);
-        this.documentType = validateDocumentType(documentType);
-        this.telephoneNumber = validateTelephoneNumber(telephoneNumber);
-        this.email = validateEmail(email);
-        this.country = validateCountry(country);
-        this.address = validateAddress(address);
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.documentType = documentType;
+        this.telephoneNumber = telephoneNumber;
+        this.email = email;
+        this.country = country;
+        this.address = address;
     }
 
-    // Validaciones
-    private static String validateId(String id) {
-        return Validator.requireText(id, "documento de identidad", MAX_ID_LENGTH);
+    public Customer() {
     }
 
-    private static String validateFirstName(String firstName) {
-        return Validator.requireText(firstName, "nombre", MAX_FIRST_NAME_LENGTH);
-    }
-
-    private static String validateLastName(String lastName) {
-        return Validator.requireText(lastName, "apellido", MAX_LAST_NAME_LENGTH);
-    }
-
-    private static DocumentType validateDocumentType(DocumentType documentType) {
-        return Validator.requireNotNull(documentType, "tipo de documento");
-    }
-
-    private static String validateTelephoneNumber(String telephoneNumber) {
-        String limpio = Validator.requireText(telephoneNumber, "teléfono", MAX_TELEPHONE_LENGTH);
-        if (!limpio.matches(TELEPHONE_PATTERN)) {
-            throw new ValidationException("El campo 'teléfono' solo puede tener dígitos, con un + opcional al inicio.");
-        }
-        return limpio;
-    }
-
-    private static String validateEmail(String email) {
-        String limpio = normalizeOptional(email);
-        if (limpio == null) {
-            return null;
-        }
-        Validator.requireMaxLength(limpio, MAX_EMAIL_LENGTH, "correo");
-        if (!limpio.matches(EMAIL_PATTERN)) {
-            throw new ValidationException("El campo 'correo' no tiene un formato válido.");
-        }
-        return limpio;
-    }
-
-    private static Country validateCountry(Country country) {
-        return Validator.requireNotNull(country, "país");
-    }
-
-    private static String validateAddress(String address) {
-        String limpio = normalizeOptional(address);
-        if (limpio == null) {
-            return null;
-        }
-        return Validator.requireMaxLength(limpio, MAX_ADDRESS_LENGTH, "dirección");
-    }
-
-    private static String normalizeOptional(String value) {
-        String limpio = Validator.normalize(value);
-        return (limpio == null || limpio.isEmpty()) ? null : limpio;
-    }
-
-    // Getters
-    @Override
     public String getId() {
         return id;
     }
 
-    /** @return nombre y apellido separados por un espacio */
-    public String getFullName() {
-        return firstName + " " + lastName;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    /** @return el nombre */
     public String getFirstName() {
         return firstName;
     }
 
-    /** @return el apellido */
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
     public String getLastName() {
         return lastName;
     }
 
-    /** @return el tipo de documento */
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
     public DocumentType getDocumentType() {
         return documentType;
     }
 
-    /** @return el teléfono */
+    public void setDocumentType(DocumentType documentType) {
+        this.documentType = documentType;
+    }
+
     public String getTelephoneNumber() {
         return telephoneNumber;
     }
 
-    /** @return el correo, o {@code null} si no tiene */
+    public void setTelephoneNumber(String telephoneNumber) {
+        this.telephoneNumber = telephoneNumber;
+    }
+
     public String getEmail() {
         return email;
     }
 
-    /** @return el país */
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public Country getCountry() {
         return country;
     }
 
-    /** @return la dirección, o {@code null} si no tiene */
+    public void setCountry(Country country) {
+        this.country = country;
+    }
+
     public String getAddress() {
         return address;
     }
 
-    // Setters (el id no tiene setter)
-
-    /**
-     * Cambia el nombre.
-     *
-     * @param firstName nuevo nombre (obligatorio, máximo 30)
-     * @throws ValidationException si no es válido
-     */
-    public void setFirstName(String firstName) {
-        this.firstName = validateFirstName(firstName);
-    }
-
-    /**
-     * Cambia el apellido.
-     *
-     * @param lastName nuevo apellido (obligatorio, máximo 30)
-     * @throws ValidationException si no es válido
-     */
-    public void setLastName(String lastName) {
-        this.lastName = validateLastName(lastName);
-    }
-
-    /**
-     * Cambia el tipo de documento.
-     *
-     * @param documentType nuevo tipo (obligatorio)
-     * @throws ValidationException si es {@code null}
-     */
-    public void setDocumentType(DocumentType documentType) {
-        this.documentType = validateDocumentType(documentType);
-    }
-
-    /**
-     * Cambia el teléfono.
-     *
-     * @param telephoneNumber nuevo teléfono (obligatorio, máximo 15, solo dígitos con + opcional)
-     * @throws ValidationException si no es válido
-     */
-    public void setTelephoneNumber(String telephoneNumber) {
-        this.telephoneNumber = validateTelephoneNumber(telephoneNumber);
-    }
-
-    /**
-     * Cambia el correo.
-     *
-     * @param email nuevo correo, o vacío/{@code null} para quitarlo
-     * @throws ValidationException si supera 80 caracteres o no tiene formato válido
-     */
-    public void setEmail(String email) {
-        this.email = validateEmail(email);
-    }
-
-    /**
-     * Cambia el país.
-     *
-     * @param country nuevo país (obligatorio)
-     * @throws ValidationException si es {@code null}
-     */
-    public void setCountry(Country country) {
-        this.country = validateCountry(country);
-    }
-
-    /**
-     * Cambia la dirección.
-     *
-     * @param address nueva dirección, o vacío/{@code null} para quitarla (máximo 40)
-     * @throws ValidationException si supera 40 caracteres
-     */
     public void setAddress(String address) {
-        this.address = validateAddress(address);
+        this.address = address;
     }
-
-    // equals, hashCode y toString
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Customer other)) return false;
-        return id.equals(other.id);
+        return Objects.equals(id, other.id);
     }
 
     @Override
