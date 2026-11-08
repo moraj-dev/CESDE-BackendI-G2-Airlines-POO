@@ -15,15 +15,15 @@ import java.util.Optional;
 public class DocumentTypeRepository implements IDocumentTypeRepository {
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=NOMBRE_BD;encrypt=false;loginTimeout=5";
-        String user = "USUARIO";
-        String password = "PASSWORD";
+        String url = "jdbc:postgresql://localhost:5432/aerolines";
+        String user = "postgres";
+        String password = "1692040402";
         return DriverManager.getConnection(url, user, password);
     }
 
     @Override
     public void create(DocumentType documentType) {
-        String sql = "INSERT INTO dbo.tblDocumentsType (TypeId, Description) VALUES (?, ?)";
+        String sql = "INSERT INTO tblDocumentsType (TypeId, Description) VALUES (?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, documentType.getId());
@@ -36,7 +36,7 @@ public class DocumentTypeRepository implements IDocumentTypeRepository {
 
     @Override
     public Optional<DocumentType> findById(String id) {
-        String sql = "SELECT TypeId, Description FROM dbo.tblDocumentsType WHERE TypeId = ?";
+        String sql = "SELECT TypeId, Description FROM tblDocumentsType WHERE TypeId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, id);
@@ -54,7 +54,7 @@ public class DocumentTypeRepository implements IDocumentTypeRepository {
     @Override
     public List<DocumentType> findAll() {
         List<DocumentType> types = new ArrayList<>();
-        String sql = "SELECT TypeId, Description FROM dbo.tblDocumentsType ORDER BY Description";
+        String sql = "SELECT TypeId, Description FROM tblDocumentsType ORDER BY Description";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -69,7 +69,7 @@ public class DocumentTypeRepository implements IDocumentTypeRepository {
 
     @Override
     public void update(DocumentType documentType) {
-        String sql = "UPDATE dbo.tblDocumentsType SET Description = ? WHERE TypeId = ?";
+        String sql = "UPDATE tblDocumentsType SET Description = ? WHERE TypeId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, documentType.getDescription());
@@ -82,7 +82,7 @@ public class DocumentTypeRepository implements IDocumentTypeRepository {
 
     @Override
     public void deleteById(String id) {
-        String sql = "DELETE FROM dbo.tblDocumentsType WHERE TypeId = ?";
+        String sql = "DELETE FROM tblDocumentsType WHERE TypeId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, id);
@@ -94,7 +94,7 @@ public class DocumentTypeRepository implements IDocumentTypeRepository {
 
     @Override
     public boolean existsById(String id) {
-        String sql = "SELECT 1 FROM dbo.tblDocumentsType WHERE TypeId = ?";
+        String sql = "SELECT 1 FROM tblDocumentsType WHERE TypeId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, id);
@@ -108,7 +108,7 @@ public class DocumentTypeRepository implements IDocumentTypeRepository {
 
     @Override
     public long count() {
-        String sql = "SELECT COUNT(*) FROM dbo.tblDocumentsType";
+        String sql = "SELECT COUNT(*) FROM tblDocumentsType";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {

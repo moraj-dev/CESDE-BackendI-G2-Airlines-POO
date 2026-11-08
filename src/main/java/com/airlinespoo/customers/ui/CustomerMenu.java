@@ -15,8 +15,7 @@ import java.util.List;
 
 /**
  * Menú de consola de clientes: registrar, consultar, actualizar contacto, listar,
- * buscar por apellido, eliminar y acceso a los menús de países y tipos de documento.
- * Solo habla con los servicios.
+ * buscar por apellido y eliminar. Solo habla con los servicios.
  */
 public class CustomerMenu implements Menu {
 
@@ -26,36 +25,27 @@ public class CustomerMenu implements Menu {
     private static final int OPTION_LIST = 4;
     private static final int OPTION_SEARCH = 5;
     private static final int OPTION_DELETE = 6;
-    private static final int OPTION_COUNTRIES = 7;
-    private static final int OPTION_DOCUMENT_TYPES = 8;
-    private static final int OPTION_BACK = 9;
+    private static final int OPTION_BACK = 7;
 
     private final ConsoleInput input;
     private final CustomerService customerService;
     private final CountryService countryService;
     private final DocumentTypeService documentTypeService;
-    private final Menu countryMenu;
-    private final Menu documentTypeMenu;
 
     /**
-     * Crea el menú con el lector de consola, los servicios y los submenús que necesita.
+     * Crea el menú con el lector de consola y los servicios que necesita.
      *
      * @param input               lector de consola compartido
      * @param customerService     servicio de clientes
      * @param countryService      servicio de países
      * @param documentTypeService servicio de tipos de documento
-     * @param countryMenu         menú de países
-     * @param documentTypeMenu    menú de tipos de documento
      */
     public CustomerMenu(ConsoleInput input, CustomerService customerService,
-                        CountryService countryService, DocumentTypeService documentTypeService,
-                        Menu countryMenu, Menu documentTypeMenu) {
+                        CountryService countryService, DocumentTypeService documentTypeService) {
         this.input = input;
         this.customerService = customerService;
         this.countryService = countryService;
         this.documentTypeService = documentTypeService;
-        this.countryMenu = countryMenu;
-        this.documentTypeMenu = documentTypeMenu;
     }
 
     @Override
@@ -73,10 +63,6 @@ public class CustomerMenu implements Menu {
 
             if (option == OPTION_BACK) {
                 back = true;
-            } else if (option == OPTION_COUNTRIES) {
-                countryMenu.run();
-            } else if (option == OPTION_DOCUMENT_TYPES) {
-                documentTypeMenu.run();
             } else {
                 execute(option);
                 input.pause();
@@ -93,8 +79,6 @@ public class CustomerMenu implements Menu {
         System.out.println(OPTION_LIST + ". Listar clientes");
         System.out.println(OPTION_SEARCH + ". Buscar por apellido");
         System.out.println(OPTION_DELETE + ". Eliminar cliente");
-        System.out.println(OPTION_COUNTRIES + ". Gestionar países");
-        System.out.println(OPTION_DOCUMENT_TYPES + ". Gestionar tipos de documento");
         System.out.println(OPTION_BACK + ". Volver");
         System.out.println("----------------------");
     }
@@ -155,8 +139,7 @@ public class CustomerMenu implements Menu {
     private DocumentType chooseDocumentType() {
         List<DocumentType> types = documentTypeService.listDocumentTypes();
         if (types.isEmpty()) {
-            throw new BusinessRuleException(
-                "No hay tipos de documento registrados. Regístralos en 'Gestionar tipos de documento'.");
+            throw new BusinessRuleException("No hay tipos de documento registrados en la base de datos.");
         }
         for (int i = 0; i < types.size(); i++) {
             DocumentType type = types.get(i);
@@ -169,8 +152,7 @@ public class CustomerMenu implements Menu {
     private Country chooseCountry() {
         List<Country> countries = countryService.listCountries();
         if (countries.isEmpty()) {
-            throw new BusinessRuleException(
-                "No hay países registrados. Regístralos en 'Gestionar países'.");
+            throw new BusinessRuleException("No hay países registrados en la base de datos.");
         }
         for (int i = 0; i < countries.size(); i++) {
             System.out.println((i + 1) + ". " + countries.get(i).getName());

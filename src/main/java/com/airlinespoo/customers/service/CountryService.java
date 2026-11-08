@@ -1,9 +1,9 @@
 package com.airlinespoo.customers.service;
 
 import com.airlinespoo.core.exception.BusinessRuleException;
-import com.airlinespoo.core.exception.DuplicateException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.exception.ValidationException;
+import com.airlinespoo.core.util.IdGenerator;
 import com.airlinespoo.customers.model.Country;
 import com.airlinespoo.customers.repository.ICountryRepository;
 import com.airlinespoo.customers.repository.ICustomerRepository;
@@ -19,33 +19,44 @@ public class CountryService {
 
     private final ICountryRepository countryRepository;
     private final ICustomerRepository customerRepository;
+    private final IdGenerator idGenerator;
 
     /**
      * Crea el servicio de países.
      *
      * @param countryRepository  repositorio de países
      * @param customerRepository repositorio de clientes, para impedir eliminar países en uso
+     * @param idGenerator        generador de ids consecutivos para los países nuevos
      */
     public CountryService(ICountryRepository countryRepository,
-                          ICustomerRepository customerRepository) {
+                          ICustomerRepository customerRepository,
+                          IdGenerator idGenerator) {
         this.countryRepository = countryRepository;
         this.customerRepository = customerRepository;
+        this.idGenerator = idGenerator;
     }
 
     /**
-     * Registra un país nuevo.
+     * Sincroniza el generador de ids con los países que ya existen en la base de datos,
+     * para no repetir ids. Debe llamarse una vez, al arrancar el programa.
+     */
+    public void syncIdGenerator() {
+        int maxId = 0;
+        for (Country country : countryRepository.findAll()) {
+            maxId = Math.max(maxId, country.getId());
+        }
+        idGenerator.syncWith(maxId);
+    }
+
+    /**
+     * Registra un país nuevo; el id lo asigna el generador.
      *
-     * @param id   identificador positivo
      * @param name nombre válido (máximo 20 caracteres)
      * @return el país guardado
-     * @throws ValidationException si los datos no son válidos
-     * @throws DuplicateException  si ya existe un país con ese id
+     * @throws ValidationException si el nombre no es válido
      */
-    public Country createCountry(int id, String name) {
-        Country country = new Country(id, name);
-        if (countryRepository.existsById(id)) {
-            throw new DuplicateException("país", id);
-        }
+    public Country createCountry(String name) {
+        Country country = new Country(idGenerator.next(), name);
         countryRepository.create(country);
         return country;
     }

@@ -20,14 +20,14 @@ public class CustomerRepository implements ICustomerRepository {
         "SELECT c.customerId, c.FirtName, c.Lastname, c.TelephoneNumber, c.Email, c.Address, "
             + "t.TypeId, t.Description AS TypeDescription, "
             + "p.CountryId, p.Name AS CountryName "
-            + "FROM dbo.tblCustomers c "
-            + "INNER JOIN dbo.tblDocumentsType t ON c.TypeId = t.TypeId "
-            + "INNER JOIN dbo.tblCountries p ON c.CountryId = p.CountryId ";
+            + "FROM tblCustomers c "
+            + "INNER JOIN tblDocumentsType t ON c.TypeId = t.TypeId "
+            + "INNER JOIN tblCountries p ON c.CountryId = p.CountryId ";
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=NOMBRE_BD;encrypt=false;loginTimeout=5";
-        String user = "USUARIO";
-        String password = "PASSWORD";
+        String url = "jdbc:postgresql://localhost:5432/aerolines";
+        String user = "postgres";
+        String password = "1692040402";
         return DriverManager.getConnection(url, user, password);
     }
 
@@ -47,7 +47,7 @@ public class CustomerRepository implements ICustomerRepository {
 
     @Override
     public void create(Customer customer) {
-        String sql = "INSERT INTO dbo.tblCustomers "
+        String sql = "INSERT INTO tblCustomers "
             + "(customerId, FirtName, Lastname, TypeId, TelephoneNumber, Email, CountryId, Address) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
@@ -101,7 +101,7 @@ public class CustomerRepository implements ICustomerRepository {
 
     @Override
     public void update(Customer customer) {
-        String sql = "UPDATE dbo.tblCustomers SET FirtName = ?, Lastname = ?, TypeId = ?, "
+        String sql = "UPDATE tblCustomers SET FirtName = ?, Lastname = ?, TypeId = ?, "
             + "TelephoneNumber = ?, Email = ?, CountryId = ?, Address = ? "
             + "WHERE customerId = ?";
         try (Connection conn = getConnection();
@@ -122,7 +122,7 @@ public class CustomerRepository implements ICustomerRepository {
 
     @Override
     public void deleteById(String id) {
-        String sql = "DELETE FROM dbo.tblCustomers WHERE customerId = ?";
+        String sql = "DELETE FROM tblCustomers WHERE customerId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, id);
@@ -134,13 +134,13 @@ public class CustomerRepository implements ICustomerRepository {
 
     @Override
     public boolean existsById(String id) {
-        String sql = "SELECT 1 FROM dbo.tblCustomers WHERE customerId = ?";
+        String sql = "SELECT 1 FROM tblCustomers WHERE customerId = ?";
         return exists(sql, id);
     }
 
     @Override
     public long count() {
-        String sql = "SELECT COUNT(*) FROM dbo.tblCustomers";
+        String sql = "SELECT COUNT(*) FROM tblCustomers";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -166,7 +166,7 @@ public class CustomerRepository implements ICustomerRepository {
         if (email == null) {
             return false;
         }
-        String sql = "SELECT 1 FROM dbo.tblCustomers WHERE LOWER(Email) = LOWER(?)";
+        String sql = "SELECT 1 FROM tblCustomers WHERE LOWER(Email) = LOWER(?)";
         return exists(sql, email);
     }
 
@@ -193,13 +193,13 @@ public class CustomerRepository implements ICustomerRepository {
 
     @Override
     public boolean existsByCountry(Country country) {
-        String sql = "SELECT 1 FROM dbo.tblCustomers WHERE CountryId = ?";
+        String sql = "SELECT 1 FROM tblCustomers WHERE CountryId = ?";
         return exists(sql, country.getId());
     }
 
     @Override
     public boolean existsByDocumentType(DocumentType documentType) {
-        String sql = "SELECT 1 FROM dbo.tblCustomers WHERE TypeId = ?";
+        String sql = "SELECT 1 FROM tblCustomers WHERE TypeId = ?";
         return exists(sql, documentType.getId());
     }
 

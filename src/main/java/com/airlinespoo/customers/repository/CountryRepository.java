@@ -15,15 +15,15 @@ import java.util.Optional;
 public class CountryRepository implements ICountryRepository {
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=NOMBRE_BD;encrypt=false;loginTimeout=5";
-        String user = "USUARIO";
-        String password = "PASSWORD";
+        String url = "jdbc:postgresql://localhost:5432/aerolines";
+        String user = "postgres";
+        String password = "1692040402";
         return DriverManager.getConnection(url, user, password);
     }
 
     @Override
     public void create(Country country) {
-        String sql = "INSERT INTO dbo.tblCountries (CountryId, Name) VALUES (?, ?)";
+        String sql = "INSERT INTO tblCountries (CountryId, Name) VALUES (?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, country.getId());
@@ -36,7 +36,7 @@ public class CountryRepository implements ICountryRepository {
 
     @Override
     public Optional<Country> findById(Integer id) {
-        String sql = "SELECT CountryId, Name FROM dbo.tblCountries WHERE CountryId = ?";
+        String sql = "SELECT CountryId, Name FROM tblCountries WHERE CountryId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -54,7 +54,7 @@ public class CountryRepository implements ICountryRepository {
     @Override
     public List<Country> findAll() {
         List<Country> countries = new ArrayList<>();
-        String sql = "SELECT CountryId, Name FROM dbo.tblCountries ORDER BY Name";
+        String sql = "SELECT CountryId, Name FROM tblCountries ORDER BY Name";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -69,7 +69,7 @@ public class CountryRepository implements ICountryRepository {
 
     @Override
     public void update(Country country) {
-        String sql = "UPDATE dbo.tblCountries SET Name = ? WHERE CountryId = ?";
+        String sql = "UPDATE tblCountries SET Name = ? WHERE CountryId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, country.getName());
@@ -82,7 +82,7 @@ public class CountryRepository implements ICountryRepository {
 
     @Override
     public void deleteById(Integer id) {
-        String sql = "DELETE FROM dbo.tblCountries WHERE CountryId = ?";
+        String sql = "DELETE FROM tblCountries WHERE CountryId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -94,7 +94,7 @@ public class CountryRepository implements ICountryRepository {
 
     @Override
     public boolean existsById(Integer id) {
-        String sql = "SELECT 1 FROM dbo.tblCountries WHERE CountryId = ?";
+        String sql = "SELECT 1 FROM tblCountries WHERE CountryId = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -108,7 +108,7 @@ public class CountryRepository implements ICountryRepository {
 
     @Override
     public long count() {
-        String sql = "SELECT COUNT(*) FROM dbo.tblCountries";
+        String sql = "SELECT COUNT(*) FROM tblCountries";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
