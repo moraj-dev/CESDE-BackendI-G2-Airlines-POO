@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Representa un aeropuerto asociado a una ciudad dentro del sistema.
  */
-public class Airport implements Identifiable<UUID> {
+public class Airport {
     private UUID id;
     private String name;
     private City city;
@@ -65,7 +65,6 @@ public class Airport implements Identifiable<UUID> {
         return city;
     }
     /** @return identificador único del aeropuerto. */
-    @Override
     public UUID getId() {
         return id;
     }

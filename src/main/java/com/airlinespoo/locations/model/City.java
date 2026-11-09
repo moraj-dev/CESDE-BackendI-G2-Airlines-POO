@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  * Representa una ciudad dentro del sistema de gestión de aeropuertos.
  */
-public class City implements Identifiable<Integer> {
+public class City {
     private int id;
     private String name;
     /**
@@ -21,6 +21,9 @@ public class City implements Identifiable<Integer> {
     public City(int id, String name){
         this.id = Math.toIntExact(Validator.requirePositive(id, "id de ciudad"));
         this.name = Validator.requireText(name, "nombre de la ciudad", 20);
+    }
+    public City(String name) {
+        this.name = Validator.requireText(name, "nombre de ciudad", 20);
     }
     /** @return nombre de la ciudad. */
     public String getName() {
@@ -36,7 +39,7 @@ public class City implements Identifiable<Integer> {
         this.name = Validator.requireText(name, "nombre de la ciudad", 20);
     }
     /** @return identificador único de la ciudad. */
-    @Override
+
     public Integer getId() {
         return id;
     }
