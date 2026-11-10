@@ -4,41 +4,39 @@ import com.airlinespoo.core.exception.BusinessRuleException;
 import com.airlinespoo.core.exception.DuplicateException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.exception.ValidationException;
-import com.airlinespoo.core.util.IdGenerator;
 import com.airlinespoo.core.util.Validator;
 import com.airlinespoo.locations.model.Airport;
 import com.airlinespoo.locations.model.City;
-import com.airlinespoo.locations.repository.AirportRepository;
-import com.airlinespoo.locations.repository.CityRepository;
+import com.airlinespoo.locations.repository.IAirportRepository;
+import com.airlinespoo.locations.repository.ICityRepository;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 /**
  * Gestiona las operaciones y reglas de negocio relacionadas con ciudades
  * y aeropuertos.
  */
 public class LocationService {
-    private final CityRepository cityRepository;
-    private final AirportRepository airportRepository;
-    private final IdGenerator idGenerator;
+    private final ICityRepository cityRepository;
+    private final IAirportRepository airportRepository;
     /**
-     * Crea el servicio con los repositorios y el generador de identificadores necesarios.
+     * Crea el servicio con los repositorios necesarios para gestionar ubicaciones.
      *
      * @param cityRepository repositorio de ciudades.
      * @param airportRepository repositorio de aeropuertos.
-     * @param idGenerator generador de identificadores para las ciudades.
      * @throws ValidationException si alguna dependencia es null.
      */
-    public LocationService(CityRepository cityRepository, AirportRepository airportRepository, IdGenerator idGenerator) {
+    public LocationService(ICityRepository cityRepository, IAirportRepository airportRepository) {
         this.cityRepository = Validator.requireNotNull(cityRepository, "repositorio de ciudades");
         this.airportRepository = Validator.requireNotNull(airportRepository, "repositorio de aeropuertos");
-        this.idGenerator = Validator.requireNotNull(idGenerator, "generador de ids");
     }
+
     /**
-     * Registra una nueva ciudad.
+     * Registra una nueva ciudad cuyo identificador es generado por PostgreSQL.
      *
      * @param name nombre de la ciudad.
      * @return ciudad creada.
@@ -51,8 +49,9 @@ public class LocationService {
             .anyMatch(city -> city.getName().equalsIgnoreCase(validName))){
             throw new DuplicateException("Ya existe una ciudad con el nombre " + validName);
         }
-        return cityRepository.create(new City(idGenerator.next(),validName));
+        return cityRepository.create(new City(validName));
     }
+
     /**
      * Busca una ciudad por su identificador.
      *
@@ -69,6 +68,7 @@ public class LocationService {
         }
         return city.get();
     }
+
     /**
      * Obtiene todas las ciudades ordenadas alfabéticamente por nombre.
      *
@@ -79,6 +79,16 @@ public class LocationService {
             .sorted(Comparator.comparing(City::getName, String.CASE_INSENSITIVE_ORDER))
             .collect(Collectors.toList());
     }
+
+    /**
+     * Cuenta las ciudades registradas en la base de datos.
+     *
+     * @return cantidad total de ciudades.
+     */
+    public long countCities() {
+        return cityRepository.count();
+    }
+
     /**
      * Actualiza el nombre de una ciudad existente.
      *
@@ -111,11 +121,12 @@ public class LocationService {
 
         return cityRepository.update(city);
     }
+
     /**
      * Elimina una ciudad que no tenga aeropuertos asociados.
      *
      * @param id identificador de la ciudad.
-     * @return true si la ciudad fue eliminada.
+     * @return true si la ciudad fue eliminada; false si no se eliminó ningún registro.
      * @throws ValidationException si el identificador no es válido.
      * @throws NotFoundException si la ciudad no existe.
      * @throws BusinessRuleException si la ciudad tiene aeropuertos asociados.
@@ -129,9 +140,9 @@ public class LocationService {
         if (airportRepository.existsByCity(foundCity.get())){
             throw new BusinessRuleException("No se puede eliminar una ciudad que contenga aeropuertos.");
         }
-        cityRepository.deleteById(validId);
-        return true;
+        return cityRepository.deleteById(validId);
     }
+
     /**
      * Busca ciudades cuyo nombre contenga el texto indicado.
      *
@@ -143,6 +154,7 @@ public class LocationService {
         String validName = Validator.requireText(name, "nombre de ciudad");
         return cityRepository.searchCitiesByName(validName);
     }
+
     /**
      * Registra un nuevo aeropuerto asociado a una ciudad existente.
      *
@@ -170,6 +182,7 @@ public class LocationService {
         Airport airport = new Airport(validName, city.get());
         return airportRepository.create(airport);
     }
+
     /**
      * Busca un aeropuerto por su identificador.
      *
@@ -186,6 +199,7 @@ public class LocationService {
         }
         return airport.get();
     }
+
     /**
      * Obtiene todos los aeropuertos ordenados alfabéticamente por nombre.
      *
@@ -196,6 +210,16 @@ public class LocationService {
             .sorted(Comparator.comparing(Airport::getName, String.CASE_INSENSITIVE_ORDER))
             .collect(Collectors.toList());
     }
+
+    /**
+     * Cuenta todos los aeropuertos registrados en la base de datos.
+     *
+     * @return cantidad total de aeropuertos.
+     */
+    public long countAirports() {
+        return airportRepository.count();
+    }
+
     /**
      * Actualiza el nombre y la ciudad asociada a un aeropuerto existente.
      *
@@ -219,7 +243,7 @@ public class LocationService {
         Airport existingAirport = airport.get();
         boolean duplicate = airportRepository.listAirportsByCity(city)
             .stream().anyMatch(existing -> existing.getName().equalsIgnoreCase(validName)
-            && !existing.getId().equals(validId));
+                && !existing.getId().equals(validId));
         if (duplicate){
             throw new DuplicateException(
                 "Ya existe un aeropuerto con el nombre "
@@ -231,11 +255,12 @@ public class LocationService {
 
         return airportRepository.update(existingAirport);
     }
+
     /**
      * Elimina un aeropuerto existente.
      *
      * @param id identificador UUID del aeropuerto.
-     * @return true si el aeropuerto fue eliminado.
+     * @return true si el aeropuerto fue eliminado; false si no se eliminó ningún registro.
      * @throws ValidationException si el identificador es null.
      * @throws NotFoundException si el aeropuerto no existe.
      */
@@ -245,9 +270,9 @@ public class LocationService {
         if (airport.isEmpty()){
             throw new NotFoundException("aeropuerto", validId);
         }
-        airportRepository.deleteById(validId);
-        return true;
+        return airportRepository.deleteById(validId);
     }
+
     /**
      * Obtiene los aeropuertos de una ciudad ordenados alfabéticamente por nombre.
      *
@@ -270,6 +295,20 @@ public class LocationService {
             ))
             .collect(Collectors.toList());
     }
+
+    /**
+     * Cuenta los aeropuertos asociados a una ciudad existente.
+     *
+     * @param idCity identificador de la ciudad.
+     * @return cantidad de aeropuertos asociados a la ciudad.
+     * @throws ValidationException si el identificador no es válido.
+     * @throws NotFoundException si la ciudad no existe.
+     */
+    public long countAirportsByCity(int idCity) {
+        City city = getCity(idCity);
+        return airportRepository.countAirportsByCity(city);
+    }
+
     /**
      * Busca aeropuertos cuyo nombre contenga el texto indicado.
      *
