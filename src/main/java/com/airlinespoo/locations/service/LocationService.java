@@ -5,6 +5,7 @@ import com.airlinespoo.core.exception.DuplicateException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.exception.ValidationException;
 import com.airlinespoo.core.util.Validator;
+import com.airlinespoo.flights.repository.IFlightRepository;
 import com.airlinespoo.locations.model.Airport;
 import com.airlinespoo.locations.model.City;
 import com.airlinespoo.locations.repository.IAirportRepository;
@@ -23,16 +24,19 @@ import java.util.stream.Collectors;
 public class LocationService {
     private final ICityRepository cityRepository;
     private final IAirportRepository airportRepository;
+    private final IFlightRepository flightRepository;
     /**
      * Crea el servicio con los repositorios necesarios para gestionar ubicaciones.
      *
      * @param cityRepository repositorio de ciudades.
      * @param airportRepository repositorio de aeropuertos.
+     * @param flightRepository repositorio de vuelos.
      * @throws ValidationException si alguna dependencia es null.
      */
-    public LocationService(ICityRepository cityRepository, IAirportRepository airportRepository) {
+    public LocationService(ICityRepository cityRepository, IAirportRepository airportRepository, IFlightRepository flightRepository) {
         this.cityRepository = Validator.requireNotNull(cityRepository, "repositorio de ciudades");
         this.airportRepository = Validator.requireNotNull(airportRepository, "repositorio de aeropuertos");
+        this.flightRepository = Validator.requireNotNull(flightRepository, "repositorio de vuelos");
     }
 
     /**
@@ -257,20 +261,29 @@ public class LocationService {
     }
 
     /**
-     * Elimina un aeropuerto existente.
+     * Elimina un aeropuerto del sistema mediante su identificador.
+     * Verifica que el aeropuerto exista y que no tenga vuelos asociados
+     * como origen o destino antes de permitir su eliminación.
      *
-     * @param id identificador UUID del aeropuerto.
-     * @return true si el aeropuerto fue eliminado; false si no se eliminó ningún registro.
-     * @throws ValidationException si el identificador es null.
-     * @throws NotFoundException si el aeropuerto no existe.
+     * @param id identificador UUID del aeropuerto que se desea eliminar
+     * @return {@code true} si el aeropuerto fue eliminado correctamente,
+     *         {@code false} si no se realizó la eliminación
+     * @throws NotFoundException si el aeropuerto no existe
+     * @throws BusinessRuleException si el aeropuerto tiene vuelos asociados
+     *         y no puede ser eliminado
+     * @throws ValidationException si el identificador proporcionado no es válido
      */
-    public boolean deleteAirport(UUID id){
-        UUID validId = Validator.requireNotNull(id, "id de aeropuerto");
-        Optional<Airport> airport = airportRepository.findById(validId);
-        if (airport.isEmpty()){
-            throw new NotFoundException("aeropuerto", validId);
+    public boolean deleteAirport(UUID id) {
+
+        Airport airport = getAirport(id);
+
+        if (flightRepository.existsByAirport(airport)) {
+            throw new BusinessRuleException(
+                "No se puede eliminar el aeropuerto porque tiene vuelos asociados."
+            );
         }
-        return airportRepository.deleteById(validId);
+
+        return airportRepository.deleteById(id);
     }
 
     /**
