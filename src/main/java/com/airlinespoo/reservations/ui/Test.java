@@ -49,4 +49,23 @@ public class Test {
         System.out.println("=== FIN DE LAS PRUEBAS ===");
     }
 }**/
+package com.airlinespoo.reservations.ui;
 
+import com.airlinespoo.reservations.repository.ReservationRepository;
+import com.airlinespoo.reservations.service.ReservationService;
+
+public class Test {
+    public static void main(String[] args) {
+        // 1. Inicializamos el repositorio en memoria
+        ReservationRepository repository = new ReservationRepository();
+
+        // 2. Inicializamos el servicio pasándole el repositorio
+        ReservationService service = new ReservationService(repository);
+
+        // 3. Inicializamos el menú pasándole el servicio
+        ReservationMenu menu = new ReservationMenu(service);
+
+        // 4. Mostramos el menú interactivo en la consola
+        menu.showMenu();
+    }
+}
