@@ -1,7 +1,7 @@
 package com.airlinespoo.airlines.service;
 
 import com.airlinespoo.airlines.model.Airline;
-import com.airlinespoo.airlines.repository.AirlineRepository;
+import com.airlinespoo.airlines.repository.InMemoryAirlineRepository;
 import com.airlinespoo.core.exception.DuplicateException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.util.IdGenerator;
@@ -17,17 +17,17 @@ import java.util.Optional;
  */
 public class AirlineService {
 
-    private final AirlineRepository airlineRepository;
+    private final InMemoryAirlineRepository inMemoryAirlineRepository;
     private final IdGenerator idGenerator;
 
     /**
      * Construye el servicio de aerolíneas con sus dependencias requeridas.
      *
-     * @param airlineRepository repositorio de aerolíneas
+     * @param inMemoryAirlineRepository repositorio de aerolíneas
      * @param idGenerator       generador de identificadores únicos
      */
-    public AirlineService(AirlineRepository airlineRepository, IdGenerator idGenerator) {
-        this.airlineRepository = airlineRepository;
+    public AirlineService(InMemoryAirlineRepository inMemoryAirlineRepository, IdGenerator idGenerator) {
+        this.inMemoryAirlineRepository = inMemoryAirlineRepository;
         this.idGenerator = idGenerator;
     }
 
@@ -40,13 +40,13 @@ public class AirlineService {
      */
     public Airline createAirline(String name) {
         String cleanName = Validator.normalize(name);
-        if (airlineRepository.existsByName(cleanName)) {
+        if (inMemoryAirlineRepository.existsByName(cleanName)) {
             throw new DuplicateException("Ya existe una aerolínea con el nombre '" +  cleanName + "'.");
         }
 
         int id = idGenerator.next();
         Airline airline = new Airline(id, cleanName);
-        return airlineRepository.create(airline);
+        return inMemoryAirlineRepository.create(airline);
     }
 
     /**
@@ -57,7 +57,7 @@ public class AirlineService {
      * @throws NotFoundException si el identificador no existe
      */
     public Airline getAirline(Integer id) {
-        Optional<Airline> found = airlineRepository.findById(id);
+        Optional<Airline> found = inMemoryAirlineRepository.findById(id);
         if (found.isEmpty()) {
             throw new NotFoundException("aerolínea", id);
         }
@@ -70,7 +70,7 @@ public class AirlineService {
      * @return lista ordenada de aerolíneas
      */
     public List<Airline> listAirlines() {
-        List<Airline> airlines = airlineRepository.findAll();
+        List<Airline> airlines = inMemoryAirlineRepository.findAll();
         airlines.sort(Comparator.comparing(Airline::getName, String.CASE_INSENSITIVE_ORDER));
         return airlines;
     }
@@ -87,13 +87,13 @@ public class AirlineService {
         Airline airline = getAirline(id);
         String cleanName = Validator.normalize(name);
 
-        Optional<Airline> found = airlineRepository.findByName(cleanName);
+        Optional<Airline> found = inMemoryAirlineRepository.findByName(cleanName);
         if (found.isPresent() && !found.get().getId().equals(airline.getId())) {
             throw new DuplicateException("Ya existe una aerolínea con el nombre '" +  cleanName + "'.");
         }
 
         airline.setName(cleanName);
-        return airlineRepository.update(airline);
+        return inMemoryAirlineRepository.update(airline);
     }
 
     /**
@@ -103,7 +103,7 @@ public class AirlineService {
      */
     public void deleteAirline(Integer id) {
         getAirline(id);
-        airlineRepository.deleteById(id);
+        inMemoryAirlineRepository.deleteById(id);
     }
 
     /**
@@ -112,7 +112,7 @@ public class AirlineService {
      * @return cantidad total de aerolíneas
      */
     public long countAirlines() {
-        return airlineRepository.count();
+        return inMemoryAirlineRepository.count();
     }
 
     /**
@@ -124,7 +124,7 @@ public class AirlineService {
     public List<Airline> searchAirlinesByName(String text) {
         String cleanSearch = Validator.requireText(text, "texto de búsqueda").toLowerCase();
         List<Airline> result = new ArrayList<>();
-        for (Airline airline : airlineRepository.findAll()) {
+        for (Airline airline : inMemoryAirlineRepository.findAll()) {
             if (airline.getName().toLowerCase().contains(cleanSearch)) {
                 result.add(airline);
             }

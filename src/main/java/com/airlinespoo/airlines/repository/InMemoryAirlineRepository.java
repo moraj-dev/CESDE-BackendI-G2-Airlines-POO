@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Repositorio en memoria para la gestión y persistencia temporal de entidades {@link Airline}.
  */
-public class AirlineRepository extends InMemoryRepository<Airline, Integer> {
+public class InMemoryAirlineRepository extends InMemoryRepository<Airline, Integer> {
 
     /**
      * {@inheritDoc}
