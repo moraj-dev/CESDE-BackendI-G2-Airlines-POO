@@ -6,6 +6,7 @@ import com.airlinespoo.flights.repository.FlightRepository;
 import com.airlinespoo.flights.repository.IFlightRepository;
 import com.airlinespoo.locations.repository.CityRepository;
 import com.airlinespoo.locations.repository.AirportRepository;
+import com.airlinespoo.locations.service.LocationDataSeeder;
 import com.airlinespoo.locations.service.LocationService;
 
 public class LocationTestMain {
@@ -19,6 +20,9 @@ public class LocationTestMain {
         // Crear el servicio con las dependencias
         IFlightRepository flightRepository = new FlightRepository();
         LocationService locationService = new LocationService(cityRepository, airportRepository, flightRepository);
+
+        LocationDataSeeder seeder = new LocationDataSeeder(locationService);
+        seeder.loadSampleData();
         // Crear la entrada de consola
         ConsoleInput consoleInput = new ConsoleInput();
 
