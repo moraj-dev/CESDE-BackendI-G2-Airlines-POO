@@ -53,6 +53,12 @@ public class CustomerSampleData {
             documentTypeService.createDocumentType("CE", "Cédula extranjería");
         }
 
+        if (colombia == null) {
+            colombia = countryService.listCountries().stream().filter(c -> c.getName().equalsIgnoreCase("Colombia")).findFirst().orElse(null);
+        }
+        if (mexico == null) {
+            mexico = countryService.listCountries().stream().filter(c -> c.getName().equalsIgnoreCase("México")).findFirst().orElse(null);
+        }
         if (customerService.countCustomers() == 0 && colombia != null && mexico != null) {
             customerService.createCustomer("1001", "Laura", "Pérez", "CC",
                 "3001234567", "laura.perez@mail.com", colombia.getId(), "Calle 10 # 5-20");

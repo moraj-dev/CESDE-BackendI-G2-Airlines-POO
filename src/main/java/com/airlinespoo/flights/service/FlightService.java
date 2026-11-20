@@ -1,6 +1,7 @@
 package com.airlinespoo.flights.service;
 
 import com.airlinespoo.airlines.model.Airline;
+import com.airlinespoo.airlines.service.AirlineService;
 import com.airlinespoo.core.exception.DuplicateException;
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.exception.ValidationException;
@@ -23,41 +24,27 @@ import java.util.UUID;
 /**
  * Gestiona las operaciones de vuelos y sus reglas de negocio.
  * <p>Utiliza PostgreSQL a través de {@link IFlightRepository}, consulta los
- * aeropuertos mediante {@link LocationService} y recibe una abstracción
- * temporal de consulta de aerolíneas. No utiliza {@code InMemoryRepository}.</p>
+ * aeropuertos mediante {@link LocationService} y consulta aerolíneas mediante {@link AirlineService}. No utiliza {@code InMemoryRepository}.</p>
  */
 public class FlightService {
 
-    /**
-     * Contrato mínimo que deberá proporcionar la integración del módulo Airlines.
-     * Su implementación deberá consultar aerolíneas reales de PostgreSQL.
-     * No debe devolver datos solo presentes en memoria.
-     */
-    public interface AirlineLookup {
-        /** @return aerolínea existente con el ID indicado; lanza NotFoundException si no existe */
-        Airline getAirline(int id);
-
-        /** @return aerolíneas registradas, para mostrarlas en el menú */
-        List<Airline> listAirlines();
-    }
-
     private final IFlightRepository flightRepository;
     private final LocationService locationService;
-    private final AirlineLookup airlineLookup;
+    private final AirlineService airlineService;
 
     /**
      * Inicializa el servicio con las dependencias necesarias.
      *
      * @param flightRepository contrato de persistencia de vuelos
      * @param locationService servicio para validar aeropuertos
-     * @param airlineLookup consulta de aerolíneas existentes en PostgreSQL
+     * @param airlineService servicio de aerolíneas conectado a PostgreSQL
      */
     public FlightService(IFlightRepository flightRepository,
                          LocationService locationService,
-                         AirlineLookup airlineLookup) {
+                         AirlineService airlineService) {
         this.flightRepository = Validator.requireNotNull(flightRepository, "repositorio de vuelos");
         this.locationService = Validator.requireNotNull(locationService, "servicio de ubicaciones");
-        this.airlineLookup = Validator.requireNotNull(airlineLookup, "consulta de aerolíneas");
+        this.airlineService = Validator.requireNotNull(airlineService, "servicio de aerolíneas");
     }
 
     /**
@@ -72,7 +59,7 @@ public class FlightService {
         // El modelo comprueba formato, fechas y que los aeropuertos sean distintos.
         Airport departure = locationService.getAirport(departureId);
         Airport arrival = locationService.getAirport(arrivalId);
-        Airline airline = airlineLookup.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
+        Airline airline = airlineService.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
 
         Flight flight = new Flight(flightName, departure, arrival,
             departureDate, departureTime, arrivalDate, arrivalTime, airline);
@@ -111,7 +98,7 @@ public class FlightService {
         Flight current = getFlight(id);
         Airport departure = locationService.getAirport(departureId);
         Airport arrival = locationService.getAirport(arrivalId);
-        Airline airline = airlineLookup.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
+        Airline airline = airlineService.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
 
         // Construir primero un objeto temporal valida todos los campos sin alterar el original.
         Flight validated = new Flight(current.getId(), flightName, departure, arrival,
@@ -139,7 +126,7 @@ public class FlightService {
 
     /** @return aerolíneas disponibles para seleccionar en el menú */
     public List<Airline> listAirlines() {
-        List<Airline> airlines = new ArrayList<>(airlineLookup.listAirlines());
+        List<Airline> airlines = new ArrayList<>(airlineService.listAirlines());
         airlines.sort(Comparator.comparing(Airline::getName, String.CASE_INSENSITIVE_ORDER));
         return airlines;
     }
@@ -151,7 +138,7 @@ public class FlightService {
 
     /** @return vuelos de una aerolínea, ordenados por salida */
     public List<Flight> listFlightsByAirline(int airlineId) {
-        Airline airline = airlineLookup.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
+        Airline airline = airlineService.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
         List<Flight> flights = new ArrayList<>(flightRepository.findByAirline(airline));
         flights.sort(Comparator.naturalOrder());
         return flights;
@@ -186,13 +173,13 @@ public class FlightService {
 
     /** @return cantidad de vuelos registrados para una aerolínea existente */
     public long countFlightsByAirline(int airlineId) {
-        Airline airline = airlineLookup.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
+        Airline airline = airlineService.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
         return flightRepository.countByAirline(airline);
     }
 
     /** @return true si la aerolínea existente tiene vuelos relacionados */
     public boolean airlineHasFlights(int airlineId) {
-        Airline airline = airlineLookup.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
+        Airline airline = airlineService.getAirline(requirePositiveId(airlineId, "id de aerolínea"));
         return flightRepository.existsByAirline(airline);
     }
 

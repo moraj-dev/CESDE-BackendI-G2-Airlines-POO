@@ -5,8 +5,9 @@ import com.airlinespoo.customers.model.Country;
 import com.airlinespoo.customers.model.Customer;
 import com.airlinespoo.customers.model.DocumentType;
 
+import core.database.DatabaseConnection;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,10 +26,7 @@ public class CustomerRepository implements ICustomerRepository {
             + "INNER JOIN tblCountries p ON c.CountryId = p.CountryId ";
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/aerolines";
-        String user = "postgres";
-        String password = "1692040402";
-        return DriverManager.getConnection(url, user, password);
+        return DatabaseConnection.getConnection();
     }
 
     private Customer mapCustomer(ResultSet rs) throws SQLException {

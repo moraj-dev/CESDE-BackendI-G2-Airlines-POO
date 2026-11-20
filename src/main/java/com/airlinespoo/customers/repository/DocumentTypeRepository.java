@@ -3,8 +3,9 @@ package com.airlinespoo.customers.repository;
 import com.airlinespoo.core.exception.AirlinesException;
 import com.airlinespoo.customers.model.DocumentType;
 
+import core.database.DatabaseConnection;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,10 +16,7 @@ import java.util.Optional;
 public class DocumentTypeRepository implements IDocumentTypeRepository {
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/aerolines";
-        String user = "postgres";
-        String password = "1692040402";
-        return DriverManager.getConnection(url, user, password);
+        return DatabaseConnection.getConnection();
     }
 
     @Override

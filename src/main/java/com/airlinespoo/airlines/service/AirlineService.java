@@ -19,6 +19,7 @@ public class AirlineService {
 
     private final AirlineRepository airlineRepository;
     private final IdGenerator idGenerator;
+    private java.util.function.IntPredicate airlineHasFlights = id -> false;
 
     /**
      * Construye el servicio de aerolíneas con sus dependencias requeridas.
@@ -44,7 +45,7 @@ public class AirlineService {
             throw new DuplicateException("Ya existe una aerolínea con el nombre '" +  cleanName + "'.");
         }
 
-        int id = idGenerator.next();
+        int id = idGenerator.next(); // El repositorio JDBC asigna el ID definitivo.
         Airline airline = new Airline(id, cleanName);
         return airlineRepository.create(airline);
     }
@@ -103,7 +104,16 @@ public class AirlineService {
      */
     public void deleteAirline(Integer id) {
         getAirline(id);
+        if (airlineHasFlights.test(id)) {
+            throw new com.airlinespoo.core.exception.BusinessRuleException(
+                "No se puede eliminar una aerolínea que tiene vuelos asociados.");
+        }
         airlineRepository.deleteById(id);
+    }
+
+    /** Conecta la protección frente a vuelos relacionados. */
+    public void setAirlineHasFlights(java.util.function.IntPredicate checker) {
+        this.airlineHasFlights = java.util.Objects.requireNonNull(checker);
     }
 
     /**

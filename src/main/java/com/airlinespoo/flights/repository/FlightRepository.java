@@ -7,9 +7,10 @@ import com.airlinespoo.flights.model.Flight;
 import com.airlinespoo.locations.model.Airport;
 import com.airlinespoo.locations.model.City;
 
+import core.database.DatabaseConnection;
+
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,10 +30,6 @@ import java.time.LocalDate;
  * </p>
  */
 public class FlightRepository implements IFlightRepository {
-
-    private static final String CONNECTION_URL = "jdbc:postgresql://localhost:5432/aerolines";
-    private static final String CONNECTION_USER = "postgres";
-    private static final String CONNECTION_PASSWORD = "postgres";
 
     /*
      * Al recuperar un vuelo, se reconstruyen las referencias del modelo:
@@ -63,7 +60,7 @@ public class FlightRepository implements IFlightRepository {
 
     /** Obtiene una conexión nueva a la base de datos. */
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(CONNECTION_URL, CONNECTION_USER, CONNECTION_PASSWORD);
+        return DatabaseConnection.getConnection();
     }
 
     /**

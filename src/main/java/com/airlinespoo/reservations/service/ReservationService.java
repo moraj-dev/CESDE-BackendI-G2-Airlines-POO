@@ -27,10 +27,10 @@ public class ReservationService {
     //se crear reserva (Valida existencia, fecha del vuelo y disponibilidad global de sillas).
     public void createReservation(Reservation reservation) {
         if (reservation == null) {
-            throw new IllegalArgumentException("La reserva no kan ser nula.");
+            throw new IllegalArgumentException("La reserva no puede ser nula.");
         }
 
-        int flightId = reservation.getFlight().getFlightId();
+        int flightId = reservation.getFlight().getId();
         Set<Seat> occupiedSeatsInFlight = getOccupiedSeatsForFlight(flightId);
 
         for (ReservationDetail detail : reservation.getDetails()) {
@@ -39,12 +39,15 @@ public class ReservationService {
             }
         }
 
+        if (reservation.getFlight().hasDepartedAt(LocalDateTime.now())) {
+            throw new IllegalArgumentException("No se puede reservar un vuelo que ya salió.");
+        }
         // Si pasa todas las validaciones globales, se guarda en el repositorio
         reservationRepository.save(reservation);
     }
 
-     //Obtener un conjunto (Set) con todas las sillas ya ocupadas en un vuelo específico,
-     //evitar error de la pista4
+    //Obtener un conjunto (Set) con todas las sillas ya ocupadas en un vuelo específico,
+    //evitar error de la pista4
     public Set<Seat> getOccupiedSeatsForFlight(int flightId) {
         List<Reservation> reservationsForFlight = reservationRepository.findByFlightId(flightId);
         Set<Seat> occupiedSeats = new HashSet<>();
@@ -63,7 +66,7 @@ public class ReservationService {
             .orElseThrow(() -> new IllegalArgumentException("No se encontró la reserva con ID: " + reservationId));
 
         // Validar que la silla esté libre en todo el vuelo antes de agregarla a la reserva
-        int flightId = reservation.getFlight().getFlightId();
+        int flightId = reservation.getFlight().getId();
         Set<Seat> occupiedSeats = getOccupiedSeatsForFlight(flightId);
 
         if (occupiedSeats.contains(newDetail.getSeat())) {
@@ -72,6 +75,7 @@ public class ReservationService {
 
         // Si está libre, la agregamos usando el método de negocio de la entidad Reservation
         reservation.addPassenger(newDetail);
+        reservationRepository.addDetail(reservationId, newDetail);
     }
 
     //Tabla: Cancelar reserva (Se elimina la reserva con todos sus detalles por composición).

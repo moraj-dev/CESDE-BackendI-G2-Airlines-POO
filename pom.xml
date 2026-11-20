@@ -20,33 +20,13 @@
     <main.class>com.airlinespoo.app.Main</main.class>
   </properties>
 
-    <dependencies>
-      <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>42.6.0</version>
-      </dependency>
-        <!-- Solo se usa para probar el kit base del docente -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-      <!-- Driver JDBC para PostgreSQL -->
-      <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>42.7.2</version>
-      </dependency>
-    </dependencies>
-
-    <!-- Driver JDBC para PostgreSQL -->
+  <dependencies>
     <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.7.2</version>
+      <groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>42.7.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version><scope>test</scope>
     </dependency>
   </dependencies>
 

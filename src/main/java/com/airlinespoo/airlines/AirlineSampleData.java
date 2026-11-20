@@ -26,9 +26,13 @@ public class AirlineSampleData {
      * Carga las aerolíneas por defecto en el repositorio y sincroniza el generador de IDs.
      */
     public void load() {
-        airlineRepository.create(new Airline(100, "Avianca"));
-        airlineRepository.create(new Airline(110, "Latam"));
-        airlineRepository.create(new Airline(120, "Clic"));
-        idGenerator.syncWith(120);
+        String[] names = {"Avianca", "Latam", "Clic"};
+        for (String name : names) {
+            if (!airlineRepository.existsByName(name)) {
+                airlineRepository.create(new Airline(idGenerator.next(), name));
+            }
+        }
+        int highest = airlineRepository.findAll().stream().mapToInt(Airline::getId).max().orElse(0);
+        idGenerator.syncWith(highest);
     }
 }

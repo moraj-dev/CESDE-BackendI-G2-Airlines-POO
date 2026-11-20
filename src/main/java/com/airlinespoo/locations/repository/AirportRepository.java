@@ -1,5 +1,7 @@
 package com.airlinespoo.locations.repository;
 
+import core.database.DatabaseConnection;
+
 import com.airlinespoo.core.exception.NotFoundException;
 import com.airlinespoo.core.exception.ValidationException;
 import com.airlinespoo.core.util.Validator;
@@ -21,11 +23,7 @@ import java.util.UUID;
 public class AirportRepository implements IAirportRepository {
 
     private Connection getConnection() throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/aerolines";
-        String user = "postgres";
-        String password = "postgres";
-
-        return DriverManager.getConnection(url, user, password);
+        return DatabaseConnection.getConnection();
     }
 
     /**

@@ -1,153 +1,88 @@
 package com.airlinespoo.reservations.ui;
 
+import com.airlinespoo.core.ui.ConsoleInput;
+import com.airlinespoo.core.ui.Menu;
 import com.airlinespoo.customers.model.Customer;
+import com.airlinespoo.customers.service.CustomerService;
 import com.airlinespoo.flights.model.Flight;
-import com.airlinespoo.reservations.model.Reservation;
-import com.airlinespoo.reservations.model.ReservationDetail;
-import com.airlinespoo.reservations.model.Seat;
+import com.airlinespoo.flights.service.FlightService;
+import com.airlinespoo.reservations.model.*;
 import com.airlinespoo.reservations.service.ReservationService;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+/** Menú de reservas con datos reales obtenidos de Customers y Flights. */
+public class ReservationMenu implements Menu {
+    private final ReservationService reservations;
+    private final CustomerService customers;
+    private final FlightService flights;
+    private final ConsoleInput input;
 
-public class ReservationMenu {
-
-    private final ReservationService reservationService;
-    private final Scanner scanner;
-
-    public ReservationMenu(ReservationService reservationService) {
-        this.reservationService = reservationService;
-        this.scanner = new Scanner(System.in);
+    public ReservationMenu(ReservationService reservations, CustomerService customers,
+                           FlightService flights, ConsoleInput input) {
+        this.reservations = Objects.requireNonNull(reservations);
+        this.customers = Objects.requireNonNull(customers);
+        this.flights = Objects.requireNonNull(flights);
+        this.input = Objects.requireNonNull(input);
     }
 
-    public void showMenu() {
-        int option = 0;
+    @Override public String title() { return "Reservas"; }
+
+    @Override public void run() {
+        int option;
         do {
-            System.out.println("\n=== MENÚ GESTIÓN DE RESERVAS (MÓDULO 5) ===");
-            System.out.println("1. Crear nueva reserva");
-            System.out.println("2. Buscar reservas por ID de cliente");
-            System.out.println("3. Buscar reservas por ID de vuelo");
-            System.out.println("4. Listar sillas ocupadas de un vuelo");
+            System.out.println("\n=== RESERVAS ===");
+            System.out.println("1. Crear reserva");
+            System.out.println("2. Buscar por cliente");
+            System.out.println("3. Buscar por vuelo");
+            System.out.println("4. Consultar sillas ocupadas");
             System.out.println("5. Cancelar reserva");
-            System.out.println("6. Salir");
-            System.out.print("Seleccione una opción: ");
-
+            System.out.println("6. Agregar pasajero a una reserva");
+            System.out.println("0. Volver");
+            option = input.readInt("Opción", 0, 6);
             try {
-                option = Integer.parseInt(scanner.nextLine());
-
                 switch (option) {
-                    case 1:
-                        handleCreateReservation();
-                        break;
-                    case 2:
-                        handleSearchByCustomer();
-                        break;
-                    case 3:
-                        handleSearchByFlight();
-                        break;
-                    case 4:
-                        handleListOccupiedSeats();
-                        break;
-                    case 5:
-                        handleCancelReservation();
-                        break;
-                    case 6:
-                        System.out.println("Saliendo del módulo de reservas...");
-                        break;
-                    default:
-                        System.out.println("Opción inválida. Intente de nuevo.");
+                    case 1 -> create();
+                    case 2 -> print(reservations.getReservationsByCustomer(input.readRequiredText("Documento cliente")));
+                    case 3 -> print(reservations.getReservationsByFlight(input.readInt("ID del vuelo", 1, Integer.MAX_VALUE)));
+                    case 4 -> System.out.println(reservations.getOccupiedSeatsForFlight(input.readInt("ID del vuelo", 1, Integer.MAX_VALUE)));
+                    case 5 -> System.out.println(reservations.cancelReservation(input.readInt("ID de reserva", 1, Integer.MAX_VALUE)) ? "Reserva cancelada" : "No se canceló");
+                    case 6 -> addPassenger();
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Por favor, ingrese un número válido.");
-            } catch (Exception e) {
-                System.out.println("Error de negocio: " + e.getMessage());
+            } catch (RuntimeException ex) {
+                System.out.println("Error: " + ex.getMessage());
             }
-
-        } while (option != 6);
+        } while (option != 0);
     }
 
-    private void handleCreateReservation() {
-        System.out.println("\n--- CREAR NUEVA RESERVA ---");
-        System.out.print("Ingrese ID de la reserva (número): ");
-        int reservationId = Integer.parseInt(scanner.nextLine());
-
-        // Simulación rápida de cliente y vuelo (luego se integran con sus módulos reales)
-        Customer customer = new Customer();
-        Flight flight = new Flight();
-
-        List<ReservationDetail> details = new ArrayList<>();
-        char agregarMas = 's';
-
-        while (agregarMas == 's' && details.size() < 9) {
-            System.out.print("ID del detalle: ");
-            int detailId = Integer.parseInt(scanner.nextLine());
-            System.out.print("Nombre completo del pasajero: ");
-            String name = scanner.nextLine();
-            System.out.print("Documento del pasajero: ");
-            String doc = scanner.nextLine();
-            System.out.print("Fila de la silla (Ej: A, B, C): ");
-            String row = scanner.nextLine();
-            System.out.print("Número de la silla (Ej: 1, 2): ");
-            int number = Integer.parseInt(scanner.nextLine());
-
-            Seat seat = new Seat(row, number);
-            ReservationDetail detail = new ReservationDetail(detailId, name, doc, seat);
-            details.add(detail);
-
-            if (details.size() < 9) {
-                System.out.print("¿Desea agregar otro pasajero a esta reserva? (s/n): ");
-                agregarMas = scanner.nextLine().trim().toLowerCase().charAt(0);
-            }
-        }
-
-        Reservation reservation = new Reservation(reservationId, customer, flight, details);
-        reservationService.createReservation(reservation);
-        System.out.println("¡Reserva creada y guardada con exito!");
+    private void create() {
+        int id = input.readInt("ID de reserva", 1, Integer.MAX_VALUE);
+        Customer customer = customers.getCustomer(input.readRequiredText("Documento del cliente existente"));
+        Flight flight = flights.getFlight(input.readInt("ID del vuelo existente", 1, Integer.MAX_VALUE));
+        List<ReservationDetail> passengers = new ArrayList<>();
+        do {
+            passengers.add(readPassenger());
+        } while (passengers.size() < 9 && input.confirm("¿Agregar otro pasajero?"));
+        reservations.createReservation(new Reservation(id, customer, flight, passengers));
+        System.out.println("Reserva guardada correctamente.");
     }
 
-    private void handleSearchByCustomer() {
-        System.out.print("\nIngrese el documento o ID del cliente: ");
-        String customerId = scanner.nextLine();
-        List<Reservation> reservations = reservationService.getReservationsByCustomer(customerId);
-
-        if (reservations.isEmpty()) {
-            System.out.println("No se encontraron reservas para este cliente.");
-        } else {
-            reservations.forEach(System.out::println);
-        }
+    private void addPassenger() {
+        int reservationId = input.readInt("ID de reserva existente", 1, Integer.MAX_VALUE);
+        reservations.addPassengerToReservation(reservationId, readPassenger());
+        System.out.println("Pasajero agregado correctamente.");
     }
 
-    private void handleSearchByFlight() {
-        System.out.print("\nIngrese el ID del vuelo: ");
-        int flightId = Integer.parseInt(scanner.nextLine());
-        List<Reservation> reservations = reservationService.getReservationsByFlight(flightId);
-
-        if (reservations.isEmpty()) {
-            System.out.println("No se encontraron reservas para este vuelo.");
-        } else {
-            reservations.forEach(System.out::println);
-        }
+    private ReservationDetail readPassenger() {
+        int detailId = input.readInt("ID del detalle", 1, Integer.MAX_VALUE);
+        String name = input.readRequiredText("Nombre completo");
+        String document = input.readRequiredText("Documento pasajero");
+        String row = input.readRequiredText("Fila (ej. A)");
+        int seatNumber = input.readInt("Número de silla", 1, 99);
+        return new ReservationDetail(detailId, name, document, new Seat(row, seatNumber));
     }
 
-    private void handleListOccupiedSeats() {
-        System.out.print("\nIngrese el ID del vuelo para ver sillas ocupadas: ");
-        int flightId = Integer.parseInt(scanner.nextLine());
-        var occupiedSeats = reservationService.getOccupiedSeatsForFlight(flightId);
-
-        if (occupiedSeats.isEmpty()) {
-            System.out.println("No hay sillas ocupadas en este vuelo.");
-        } else {
-            System.out.println("Sillas ocupadas: " + occupiedSeats);
-        }
-    }
-
-    private void handleCancelReservation() {
-        System.out.print("\nIngrese el ID de la reserva a cancelar: ");
-        int id = Integer.parseInt(scanner.nextLine());
-        reservationService.cancelReservation(id);
-        System.out.println("Reserva cancelada exitosamente.");
+    private void print(List<Reservation> found) {
+        if (found.isEmpty()) System.out.println("No hay reservas para el criterio seleccionado.");
+        else for (Reservation reservation : found) System.out.println(reservation);
     }
 }
-
-

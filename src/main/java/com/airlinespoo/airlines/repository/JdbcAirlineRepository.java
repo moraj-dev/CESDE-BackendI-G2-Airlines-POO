@@ -1,9 +1,9 @@
 package com.airlinespoo.airlines.repository;
 
 import com.airlinespoo.airlines.model.Airline;
+import core.database.DatabaseConnection;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,21 +36,10 @@ public class JdbcAirlineRepository implements AirlineRepository {
     private static final String SQL_EXISTS_BY_NAME =
         "SELECT 1 FROM tblairlines WHERE LOWER(name) = LOWER(?)";
 
-    private final String url;
-    private final String user;
-    private final String password;
-
     /**
-     * Crea un repositorio JDBC con los datos de conexión a PostgreSQL.
-     *
-     * @param url      URL JDBC de PostgreSQL (ej. {@code jdbc:postgresql://localhost:5432/tu_bd})
-     * @param user     usuario de la base de datos
-     * @param password contraseña de la base de datos
+     * Crea un repositorio que obtiene sus conexiones de DatabaseConnection.
      */
-    public JdbcAirlineRepository(String url, String user, String password) {
-        this.url = url;
-        this.user = user;
-        this.password = password;
+    public JdbcAirlineRepository() {
     }
 
     /**
@@ -257,7 +246,7 @@ public class JdbcAirlineRepository implements AirlineRepository {
     }
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, user, password);
+        return DatabaseConnection.getConnection();
     }
 
     private Airline mapRow(ResultSet result) throws SQLException {
