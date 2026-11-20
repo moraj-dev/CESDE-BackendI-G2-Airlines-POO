@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface AirlineRepository extends Repository<Airline, Integer> {
 
-    Optional<Airline> findByName(String title);
-    boolean existsByName(String title);
+    Optional<Airline> findByName(String name);
+    boolean existsByName(String name);
 }

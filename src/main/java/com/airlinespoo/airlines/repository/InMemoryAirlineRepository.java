@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Repositorio en memoria para la gestión y persistencia temporal de entidades {@link Airline}.
  */
-public class InMemoryAirlineRepository extends InMemoryRepository<Airline, Integer> {
+public class InMemoryAirlineRepository extends InMemoryRepository<Airline, Integer> implements AirlineRepository {
 
     /**
      * {@inheritDoc}
@@ -24,6 +24,7 @@ public class InMemoryAirlineRepository extends InMemoryRepository<Airline, Integ
      * @param name nombre de la aerolínea a buscar
      * @return un {@link Optional} con la aerolínea encontrada o vacío si no existe
      */
+    @Override
     public Optional<Airline> findByName(String name) {
         for (Airline airline : this.values()) {
             if (airline.getName().equalsIgnoreCase(name)) {
@@ -39,6 +40,7 @@ public class InMemoryAirlineRepository extends InMemoryRepository<Airline, Integ
      * @param name nombre a verificar
      * @return {@code true} si ya existe, {@code false} en caso contrario
      */
+    @Override
     public boolean existsByName(String name) {
         return findByName(name).isPresent();
     }
