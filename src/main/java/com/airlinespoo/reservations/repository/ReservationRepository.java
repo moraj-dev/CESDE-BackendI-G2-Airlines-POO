@@ -10,20 +10,21 @@ import com.airlinespoo.flights.model.Flight;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ReservationRepository {
 
-    //Guarda la reserva y sus detalles en las tablas tblReservations y tblDetailsReservation.
+    // Guarda la reserva y sus detalles en las tablas tblReservations y tblDetailsReservation
     public void save(Reservation reservation) {
         String sqlReservation = "INSERT INTO tblReservations (ReservationId, CustomerId, FlightId) VALUES (?, ?, ?)";
         String sqlDetail = "INSERT INTO tblDetailsReservation (DetailId, ReservationId, PassangerFullname, PassagerDocument, SeatNumer, RowNumber) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-            // Desactivamos el autocommit para manejar una transacción segura
+            // Desactivamos el autocommit para manejar una transacción segura (todo o nada)
             conn.setAutoCommit(false);
 
             try {
-                // Guardar la cabecera de la reserva
+                // 1. Inserta el registro principal de la reserva
                 try (PreparedStatement pstmtRes = conn.prepareStatement(sqlReservation)) {
                     pstmtRes.setInt(1, reservation.getId());
                     pstmtRes.setString(2, reservation.getCustomer() != null ? reservation.getCustomer().getCustomerId() : null);
@@ -31,7 +32,7 @@ public class ReservationRepository {
                     pstmtRes.executeUpdate();
                 }
 
-                // Guardar cada detalle (pasajero y silla) asociado a la reserva
+                // 2. Inserta cada pasajero y su silla asociada en tblDetailsReservation
                 try (PreparedStatement pstmtDet = conn.prepareStatement(sqlDetail)) {
                     for (ReservationDetail detail : reservation.getDetails()) {
                         pstmtDet.setInt(1, detail.getId());
@@ -44,9 +45,11 @@ public class ReservationRepository {
                     }
                 }
 
-                conn.commit(); // Confirmar transacción exitosa
+                // Confirma ambos inserts si no hubo errores
+                conn.commit();
             } catch (SQLException e) {
-                conn.rollback(); // Revertir si algo falla
+                // Si falla un insert (por ejemplo, ID duplicado o llave foránea), revierte todo
+                conn.rollback();
                 throw new RuntimeException("Error al guardar en la base de datos: " + e.getMessage(), e);
             }
         } catch (SQLException e) {
@@ -54,8 +57,56 @@ public class ReservationRepository {
         }
     }
 
-    //Busca todas las reservas asociadas a un vuelo en la base de datos.
+    // Busca una reserva puntual por su ID y devuelve un Optional
+    public Optional<Reservation> findById(int id) {
+        String sql = "SELECT * FROM tblReservations WHERE ReservationId = ?";
 
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int resId = rs.getInt("ReservationId");
+                    Customer customer = new Customer();
+                    Flight flight = new Flight();
+                    List<ReservationDetail> details = findDetailsByReservationId(resId);
+
+                    return Optional.of(new Reservation(resId, customer, flight, details));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar reserva por ID: " + e.getMessage(), e);
+        }
+        return Optional.empty();
+    }
+
+    // Busca todas las reservas asociadas a un cliente específico
+    public List<Reservation> findByCustomerId(String customerId) {
+        List<Reservation> reservations = new ArrayList<>();
+        String sql = "SELECT * FROM tblReservations WHERE CustomerId = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, customerId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int resId = rs.getInt("ReservationId");
+                    Customer customer = new Customer();
+                    Flight flight = new Flight();
+                    List<ReservationDetail> details = findDetailsByReservationId(resId);
+
+                    reservations.add(new Reservation(resId, customer, flight, details));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar reservas por cliente: " + e.getMessage(), e);
+        }
+        return reservations;
+    }
+
+    // Busca todas las reservas asociadas a un vuelo en la base de datos
     public List<Reservation> findByFlightId(int flightId) {
         List<Reservation> reservations = new ArrayList<>();
         String sql = "SELECT * FROM tblReservations WHERE FlightId = ?";
@@ -67,16 +118,11 @@ public class ReservationRepository {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     int resId = rs.getInt("ReservationId");
-                    String customerId = rs.getString("CustomerId");
-
-                    // Reconstruimos objetos básicos para la vista
                     Customer customer = new Customer();
-                    // (Opcional: aquí podrías asignar el ID si tu modelo lo permite)
-
                     Flight flight = new Flight();
+                    List<ReservationDetail> details = findDetailsByReservationId(resId);
 
-                    Reservation res = new Reservation(resId, customer, flight, new ArrayList<>());
-                    reservations.add(res);
+                    reservations.add(new Reservation(resId, customer, flight, details));
                 }
             }
         } catch (SQLException e) {
@@ -85,8 +131,7 @@ public class ReservationRepository {
         return reservations;
     }
 
-    //Elimina una reserva de la base de datos.
-
+    // Elimina una reserva de tblReservations por su ID
     public boolean delete(int id) {
         String sql = "DELETE FROM tblReservations WHERE ReservationId = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -97,5 +142,32 @@ public class ReservationRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Error al eliminar la reserva: " + e.getMessage(), e);
         }
+    }
+
+    // Método auxiliar privado para reconstruir la lista de pasajeros y sillas de una reserva
+    private List<ReservationDetail> findDetailsByReservationId(int reservationId) {
+        List<ReservationDetail> details = new ArrayList<>();
+        String sql = "SELECT * FROM tblDetailsReservation WHERE ReservationId = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, reservationId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int detailId = rs.getInt("DetailId");
+                    String fullName = rs.getString("PassangerFullname");
+                    String document = rs.getString("PassagerDocument");
+                    short seatNumber = rs.getShort("SeatNumer");
+                    String rowNumber = rs.getString("RowNumber");
+
+                    Seat seat = new Seat(rowNumber != null ? rowNumber.trim() : "", seatNumber);
+                    details.add(new ReservationDetail(detailId, fullName, document, seat));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al cargar detalles de la reserva: " + e.getMessage(), e);
+        }
+        return details;
     }
 }
